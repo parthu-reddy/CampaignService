@@ -1,0 +1,13 @@
+package com.fooddelivery.ad.campaign.repository;
+
+import com.fooddelivery.ad.campaign.entity.Campaign;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import java.util.UUID;
+
+public interface CampaignRepository extends JpaRepository<Campaign, UUID> {
+    List<Campaign> findByAdvertiserId(UUID advertiserId);
+    Page<Campaign> findByAdvertiserId(UUID advertiserId, Pageable pageable);
+}

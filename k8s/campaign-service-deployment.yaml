@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campaign-service
+  namespace: food-delivery
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: campaign-service
+  template:
+    metadata:
+      labels:
+        app: campaign-service
+    spec:
+      containers:
+        - name: campaign-service
+          image: food-delivery/campaign-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8097
+          envFrom:
+            - configMapRef:
+                name: advertisement-config
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
