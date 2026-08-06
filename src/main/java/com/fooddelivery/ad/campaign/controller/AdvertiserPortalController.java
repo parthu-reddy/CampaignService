@@ -3,9 +3,11 @@ package com.fooddelivery.ad.campaign.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/advertiser")
+@Slf4j
 public class AdvertiserPortalController {
     
     @PostMapping("/register")

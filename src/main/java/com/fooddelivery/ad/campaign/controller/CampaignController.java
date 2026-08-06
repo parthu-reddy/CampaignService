@@ -14,10 +14,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.math.BigDecimal;
 import com.fooddelivery.ad.campaign.client.PaymentClient;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/advertisers/{advertiserId}/campaigns")
 @RequiredArgsConstructor
+@Slf4j
 public class CampaignController {
 
     private final CampaignService campaignService;
