@@ -15,20 +15,15 @@ import com.fooddelivery.common.service.NotificationRouterService;
 import com.fooddelivery.common.event.NotificationRequestEvent;
 import com.fooddelivery.common.enums.ChannelType;
 import java.util.Map;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CampaignServiceImpl implements CampaignService {
-
     private final CampaignRepository campaignRepository;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
@@ -40,7 +35,6 @@ public class CampaignServiceImpl implements CampaignService {
         if (request.getEndDate() != null && request.getEndDate().isBefore(request.getStartDate())) {
             throw new IllegalArgumentException("Campaign end date cannot be before start date");
         }
-        
         Campaign campaign = new Campaign();
         campaign.setAdvertiserId(request.getAdvertiserId());
         campaign.setName(request.getName());
@@ -50,81 +44,66 @@ public class CampaignServiceImpl implements CampaignService {
         campaign.setStartDate(request.getStartDate());
         campaign.setEndDate(request.getEndDate());
         campaign.setStatus(CampaignStatus.ACTIVE);
-        
         Campaign saved = campaignRepository.save(campaign);
-        
         publishOutboxEvent(saved.getId(), EventType.AD_CAMPAIGN_CREATED, saved);
-        
         return mapToResponse(saved);
     }
 
     @Override
     @Transactional
     public CampaignResponse updateCampaign(UUID id, CampaignRequest request, Long version) {
-        Campaign campaign = campaignRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + id));
+        Campaign campaign = campaignRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + id));
         // Optimistic locking checked by JPA automatically via @Version
         if (!campaign.getVersion().equals(version)) {
             throw new org.springframework.orm.ObjectOptimisticLockingFailureException(Campaign.class, id);
         }
-        
         if (request.getEndDate() != null && request.getEndDate().isBefore(request.getStartDate())) {
             throw new IllegalArgumentException("Campaign end date cannot be before start date");
         }
-        
         campaign.setName(request.getName());
         campaign.setDailyBudget(request.getDailyBudget());
         campaign.setLifetimeBudget(request.getLifetimeBudget());
         campaign.setMaxBid(request.getMaxBid());
         campaign.setStartDate(request.getStartDate());
         campaign.setEndDate(request.getEndDate());
-        
         Campaign saved = campaignRepository.save(campaign);
         publishOutboxEvent(saved.getId(), EventType.AD_CAMPAIGN_UPDATED, saved);
-        
         return mapToResponse(saved);
     }
 
     @Override
     @Transactional
     public void pauseCampaign(UUID id) {
-        Campaign campaign = campaignRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + id));
+        Campaign campaign = campaignRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + id));
         campaign.setStatus(CampaignStatus.PAUSED);
         Campaign saved = campaignRepository.save(campaign);
         publishOutboxEvent(id, EventType.AD_CAMPAIGN_PAUSED, saved);
-        
-        NotificationRequestEvent evt = NotificationRequestEvent.builder()
-            .channel(ChannelType.EMAIL)
-            .eventName("CAMPAIGN_PAUSED")
-            .explicitRecipient(id.toString())
-            .payload(Map.of("campaignId", id.toString(), "message", "Your campaign has been paused."))
-            .build();
+        NotificationRequestEvent evt = NotificationRequestEvent.builder().channel(ChannelType.EMAIL).eventName("CAMPAIGN_PAUSED").explicitRecipient(campaign.getAdvertiserId().toString()).payload(Map.of("campaignId", id.toString(), "message", "Your campaign has been paused.")).build();
         notificationRouterService.routeNotification(evt);
     }
 
     @Override
     public List<CampaignResponse> getCampaignsByAdvertiser(UUID advertiserId) {
-        return campaignRepository.findByAdvertiserId(advertiserId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return campaignRepository.findByAdvertiserId(advertiserId).stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
     public org.springframework.data.domain.Page<CampaignResponse> getCampaignsByAdvertiser(UUID advertiserId, org.springframework.data.domain.Pageable pageable) {
-        return campaignRepository.findByAdvertiserId(advertiserId, pageable)
-                .map(this::mapToResponse);
+        return campaignRepository.findByAdvertiserId(advertiserId, pageable).map(this::mapToResponse);
     }
 
-    @SneakyThrows
     private void publishOutboxEvent(UUID aggregateId, EventType eventType, Object payloadObj) {
-        OutboxEventEntity event = new OutboxEventEntity();
-        event.setAggregateType(AggregateType.ADVERTISEMENT);
-        event.setAggregateId(aggregateId.toString());
-        event.setEventType(eventType);
-        event.setPayload(objectMapper.writeValueAsString(payloadObj));
-        event.setStatus(OutboxStatus.UNPROCESSED);
-        outboxEventRepository.save(event);
+        try {
+            OutboxEventEntity event = new OutboxEventEntity();
+            event.setAggregateType(AggregateType.ADVERTISEMENT);
+            event.setAggregateId(aggregateId.toString());
+            event.setEventType(eventType);
+            event.setPayload(objectMapper.writeValueAsString(payloadObj));
+            event.setStatus(OutboxStatus.UNPROCESSED);
+            outboxEventRepository.save(event);
+        } catch (final java.lang.Throwable $ex) {
+            throw new RuntimeException($ex);
+        }
     }
 
     private CampaignResponse mapToResponse(Campaign campaign) {
@@ -140,5 +119,13 @@ public class CampaignServiceImpl implements CampaignService {
         response.setEndDate(campaign.getEndDate());
         response.setVersion(campaign.getVersion());
         return response;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public CampaignServiceImpl(final CampaignRepository campaignRepository, final OutboxEventRepository outboxEventRepository, final ObjectMapper objectMapper, final NotificationRouterService notificationRouterService) {
+        this.campaignRepository = campaignRepository;
+        this.outboxEventRepository = outboxEventRepository;
+        this.objectMapper = objectMapper;
+        this.notificationRouterService = notificationRouterService;
     }
 }
