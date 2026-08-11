@@ -27,9 +27,8 @@ public class CampaignController {
 
     @PostMapping
     public ResponseEntity<CampaignResponse> createCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody CampaignRequest request) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
+
         if (!advertiserId.equals(request.getAdvertiserId())) {
             throw new IllegalArgumentException("Path advertiserId must match request payload");
         }
@@ -38,26 +37,20 @@ public class CampaignController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CampaignResponse> updateCampaign(@PathVariable UUID advertiserId, @PathVariable UUID id, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestHeader(value = "If-Match", required = false) Long version, @Validated @RequestBody CampaignRequest request) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         return ResponseEntity.ok(campaignService.updateCampaign(id, request, version));
     }
 
     @PostMapping("/{id}/pause")
     public ResponseEntity<Void> pauseCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         campaignService.pauseCampaign(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/wallet/topup")
     public ResponseEntity<Map<String, String>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestBody Map<String, Object> request) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         BigDecimal amountInInr = new BigDecimal(request.get("amount").toString());
         Map<String, Object> paymentReq = new HashMap<>();
         // Note: internalOrderId must match the WALLET_{uuid}_{uuid} format or WALLET_{uuid}
@@ -71,25 +64,19 @@ public class CampaignController {
 
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<CampaignResponse>> getCampaigns(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         return ResponseEntity.ok(campaignService.getCampaignsByAdvertiser(advertiserId, pageable));
     }
 
     @GetMapping("/{id}/performance")
     public ResponseEntity<List<CampaignPerformance>> getCampaignPerformance(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         return ResponseEntity.ok(performanceRepository.findByCampaignIdOrderByDateDesc(id));
     }
 
     @GetMapping("/performance")
     public ResponseEntity<List<CampaignPerformance>> getAllCampaignPerformance(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        if (userId != null && !userId.equals(advertiserId.toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         return ResponseEntity.ok(performanceRepository.findByAdvertiserIdOrderByDateDesc(advertiserId));
     }
 

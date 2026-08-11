@@ -7,6 +7,12 @@ import com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository;
 import com.fooddelivery.common.constants.EventPayloadConstants;
 import com.fooddelivery.common.constants.KafkaConstants;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.kafka.annotation.DltHandler;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.kafka.retrytopic.DltStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -26,6 +32,7 @@ public class KafkaAnalyticsConsumer {
         this.objectMapper = objectMapper;
     }
 
+    @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR)
     @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     @io.micrometer.observation.annotation.Observed(name = "analytics.consume", contextualName = "analytics-consumer")
@@ -74,5 +81,10 @@ public class KafkaAnalyticsConsumer {
             log.error("Transient error processing tracking event, will be retried: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to process tracking event", e);
         }
+    }
+
+    @DltHandler
+    public void handleDlt(Object message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        System.err.println("Message failed 5 times and sent to DLT: " + topic + " - " + message);
     }
 }

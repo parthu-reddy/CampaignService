@@ -52,3 +52,14 @@ resilience4j:
         waitDuration: 500ms
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
+
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 3000
+      circuitbreaker:
+        enabled: true

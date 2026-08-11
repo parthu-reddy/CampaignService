@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "payment-gateway-service")
+@FeignClient(name = "payment-service", fallback = PaymentClientFallback.class)
 public interface PaymentClient {
 
     @PostMapping("/api/v1/payments/create-order")
