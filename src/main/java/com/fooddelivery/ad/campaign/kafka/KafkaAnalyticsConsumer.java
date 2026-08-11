@@ -85,6 +85,6 @@ public class KafkaAnalyticsConsumer {
 
     @DltHandler
     public void handleDlt(Object message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-        System.err.println("Message failed 5 times and sent to DLT: " + topic + " - " + message);
+        log.error("Tracking event failed all retries and sent to DLT: {} - {}", topic, message);
     }
 }
