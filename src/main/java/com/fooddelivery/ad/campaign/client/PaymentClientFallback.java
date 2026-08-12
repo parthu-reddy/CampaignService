@@ -3,7 +3,7 @@ package com.fooddelivery.ad.campaign.client;
 import org.springframework.stereotype.Component;
 import java.util.Map;
 
-@Component
+@Component("campaignPaymentClientFallback")
 public class PaymentClientFallback implements PaymentClient {
     @Override
     public String createOrder(String gateway, Map<String, Object> request) {

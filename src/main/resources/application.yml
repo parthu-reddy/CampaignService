@@ -21,6 +21,15 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: "0"
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 3000
+      circuitbreaker:
+        enabled: true
 
 eureka:
   client:
@@ -53,13 +62,4 @@ resilience4j:
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
 
-spring:
-  cloud:
-    openfeign:
-      client:
-        config:
-          default:
-            connectTimeout: 2000
-            readTimeout: 3000
-      circuitbreaker:
-        enabled: true
+
