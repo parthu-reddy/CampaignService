@@ -11,8 +11,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/internal/campaigns")
+@lombok.extern.slf4j.Slf4j
 public class InternalCampaignController {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(InternalCampaignController.class);
+
     private final CampaignRepository campaignRepository;
 
     public InternalCampaignController(CampaignRepository campaignRepository) {

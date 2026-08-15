@@ -21,9 +21,10 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@lombok.extern.slf4j.Slf4j
 public class KafkaAnalyticsConsumer {
     @java.lang.SuppressWarnings("all")
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(KafkaAnalyticsConsumer.class);
+
     private final CampaignPerformanceRepository performanceRepository;
     private final ObjectMapper objectMapper;
 

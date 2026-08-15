@@ -6,9 +6,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/advertiser")
+@lombok.extern.slf4j.Slf4j
 public class AdvertiserPortalController {
     @java.lang.SuppressWarnings("all")
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AdvertiserPortalController.class);
 
     @PostMapping("/register")
     public ResponseEntity<String> registerAdvertiser() {

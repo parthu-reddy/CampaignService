@@ -12,17 +12,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.math.BigDecimal;
-import com.fooddelivery.ad.campaign.client.PaymentClient;
+import com.fooddelivery.common.client.PaymentServiceClient;
+import com.fooddelivery.common.dto.payment.CreateOrderRequest;
 import com.fooddelivery.ad.campaign.entity.CampaignPerformance;
 import com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository;
 
 @RestController
 @RequestMapping("/api/v1/advertisers/{advertiserId}/campaigns")
+@lombok.extern.slf4j.Slf4j
 public class CampaignController {
     @java.lang.SuppressWarnings("all")
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CampaignController.class);
+
     private final CampaignService campaignService;
-    private final PaymentClient paymentClient;
+    private final PaymentServiceClient paymentClient;
     private final CampaignPerformanceRepository performanceRepository;
 
     @PostMapping
@@ -52,10 +54,8 @@ public class CampaignController {
     public ResponseEntity<Map<String, String>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestBody Map<String, Object> request) {
         // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         BigDecimal amountInInr = new BigDecimal(request.get("amount").toString());
-        Map<String, Object> paymentReq = new HashMap<>();
-        // Note: internalOrderId must match the WALLET_{uuid}_{uuid} format or WALLET_{uuid}
-        paymentReq.put("internalOrderId", "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString().substring(0, 8));
-        paymentReq.put("amountInInr", amountInInr);
+        String internalOrderId = "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString().substring(0, 8);
+        CreateOrderRequest paymentReq = new CreateOrderRequest(internalOrderId, amountInInr);
         String intentOrOrderId = paymentClient.createOrder("RAZORPAY", paymentReq);
         Map<String, String> response = new HashMap<>();
         response.put("orderId", intentOrOrderId);
@@ -81,7 +81,7 @@ public class CampaignController {
     }
 
     @java.lang.SuppressWarnings("all")
-    public CampaignController(final CampaignService campaignService, final PaymentClient paymentClient, final CampaignPerformanceRepository performanceRepository) {
+    public CampaignController(final CampaignService campaignService, final PaymentServiceClient paymentClient, final CampaignPerformanceRepository performanceRepository) {
         this.campaignService = campaignService;
         this.paymentClient = paymentClient;
         this.performanceRepository = performanceRepository;

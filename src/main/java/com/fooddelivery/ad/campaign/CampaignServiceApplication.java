@@ -9,10 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(scanBasePackages = {
-    "com.fooddelivery.ad.campaign",
-    "com.fooddelivery.common"
-})
+@SpringBootApplication(scanBasePackages = {"com.fooddelivery.ad.campaign",
+    "com.fooddelivery.common", "com.fooddelivery"})
 @EntityScan(basePackages = {
     "com.fooddelivery.ad.campaign.entity",
     "com.fooddelivery.common.outbox.entity"
