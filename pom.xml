@@ -250,7 +250,7 @@
                 </executions>
 
                 <configuration>
-                    
+                    <jmxPort>9015</jmxPort>
                 </configuration>
             </plugin>
         

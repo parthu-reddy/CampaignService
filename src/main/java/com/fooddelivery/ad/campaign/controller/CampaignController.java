@@ -2,6 +2,7 @@ package com.fooddelivery.ad.campaign.controller;
 
 import com.fooddelivery.ad.campaign.dto.CampaignRequest;
 import com.fooddelivery.ad.campaign.dto.CampaignResponse;
+import com.fooddelivery.ad.campaign.dto.TopupWalletRequest;
 import com.fooddelivery.ad.campaign.service.CampaignService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,9 +52,9 @@ public class CampaignController {
     }
 
     @PostMapping("/wallet/topup")
-    public ResponseEntity<Map<String, String>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestBody Map<String, Object> request) {
+    public ResponseEntity<Map<String, String>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody TopupWalletRequest request) {
         // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
-        BigDecimal amountInInr = new BigDecimal(request.get("amount").toString());
+        BigDecimal amountInInr = request.getAmount();
         String internalOrderId = "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString().substring(0, 8);
         CreateOrderRequest paymentReq = new CreateOrderRequest(internalOrderId, amountInInr);
         String intentOrOrderId = paymentClient.createOrder("RAZORPAY", paymentReq);
