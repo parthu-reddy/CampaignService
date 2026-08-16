@@ -55,9 +55,10 @@ public class CampaignController {
     public ResponseEntity<Map<String, String>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody TopupWalletRequest request) {
         // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
         BigDecimal amountInInr = request.getAmount();
-        String internalOrderId = "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString().substring(0, 8);
+        String internalOrderId = "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString();
         CreateOrderRequest paymentReq = new CreateOrderRequest(internalOrderId, amountInInr);
-        String intentOrOrderId = paymentClient.createOrder("RAZORPAY", paymentReq);
+        String gateway = request.getGatewayName() != null && !request.getGatewayName().isBlank() ? request.getGatewayName() : "RAZORPAY";
+        String intentOrOrderId = paymentClient.createOrder(gateway, paymentReq);
         Map<String, String> response = new HashMap<>();
         response.put("orderId", intentOrOrderId);
         return ResponseEntity.ok(response);

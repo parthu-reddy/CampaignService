@@ -10,6 +10,8 @@ public class TopupWalletRequest {
     @Positive
     private BigDecimal amount;
 
+    private String gatewayName;
+
     public TopupWalletRequest() {}
 
     public TopupWalletRequest(BigDecimal amount) {
@@ -22,5 +24,13 @@ public class TopupWalletRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public String getGatewayName() {
+        return gatewayName;
+    }
+
+    public void setGatewayName(String gatewayName) {
+        this.gatewayName = gatewayName;
     }
 }
