@@ -6,6 +6,8 @@ import com.fooddelivery.ad.campaign.entity.CampaignPerformance;
 import com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository;
 import com.fooddelivery.common.constants.EventPayloadConstants;
 import com.fooddelivery.common.constants.KafkaConstants;
+import com.fooddelivery.common.entity.IdempotencyKey;
+import com.fooddelivery.common.repository.IIdempotencyKeyRepository;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.retry.annotation.Backoff;
@@ -23,21 +25,38 @@ import java.util.UUID;
 @Service
 @lombok.extern.slf4j.Slf4j
 public class KafkaAnalyticsConsumer {
-    @java.lang.SuppressWarnings("all")
 
     private final CampaignPerformanceRepository performanceRepository;
     private final ObjectMapper objectMapper;
+    private final IIdempotencyKeyRepository idempotencyKeyRepository;
 
-    public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper) {
+    public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository) {
         this.performanceRepository = performanceRepository;
         this.objectMapper = objectMapper;
+        this.idempotencyKeyRepository = idempotencyKeyRepository;
     }
 
     @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR)
     @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     @io.micrometer.observation.annotation.Observed(name = "analytics.consume", contextualName = "analytics-consumer")
-    public void consumeTrackingEvent(String message) {
+    public void consumeTrackingEvent(String message, @org.springframework.messaging.handler.annotation.Headers java.util.Map<String, Object> headers) {
+        String extractedEventId = com.fooddelivery.common.util.KafkaHeaderUtils.extractHeaderValue(headers, "eventId");
+        final String resolvedEventId;
+        if (extractedEventId == null) {
+            resolvedEventId = UUID.nameUUIDFromBytes(message.getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+        } else {
+            resolvedEventId = extractedEventId;
+        }
+
+        String idempotencyKeyStr = "processed_event:" + resolvedEventId;
+
+        if (idempotencyKeyRepository.existsById(idempotencyKeyStr)) {
+            log.info("Duplicate tracking event ignored: {}", idempotencyKeyStr);
+            return;
+        }
+        idempotencyKeyRepository.save(new IdempotencyKey(idempotencyKeyStr));
+
         Map<String, Object> payload;
         try {
             payload = objectMapper.readValue(message, new TypeReference<Map<String, Object>>() {
