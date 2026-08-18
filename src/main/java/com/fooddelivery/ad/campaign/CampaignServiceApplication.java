@@ -13,12 +13,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     "com.fooddelivery.common", "com.fooddelivery"})
 @EntityScan(basePackages = {
     "com.fooddelivery.ad.campaign.entity",
-    "com.fooddelivery.common.outbox.entity"
+    "com.fooddelivery.common.outbox.entity",
+    "com.fooddelivery.common.entity"
 })
-@EnableJpaRepositories(basePackages = {
-    "com.fooddelivery.ad.campaign.repository",
-    "com.fooddelivery.common.outbox.repository"
-})
+@EnableJpaRepositories(basePackages = {"com.fooddelivery"})
 @EnableJpaAuditing
 @EnableScheduling
 @EnableFeignClients(basePackages = "com.fooddelivery.ad.campaign.client")
