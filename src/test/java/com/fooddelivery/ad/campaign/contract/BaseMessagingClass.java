@@ -72,4 +72,34 @@ public abstract class BaseMessagingClass {
                 .thenReturn(new java.util.ArrayList<>(java.util.List.of(outboxEvent)));
         new com.fooddelivery.common.outbox.service.OutboxProcessor(repo, kafkaTemplate).processOutboxEvents();
     }
+    /** Mirrors CampaignServiceImpl.pauseCampaign -- same Campaign payload, AD_CAMPAIGN_PAUSED. */
+    public void fireAdCampaignPaused() throws Exception {
+        com.fooddelivery.ad.campaign.entity.Campaign campaign =
+                new com.fooddelivery.ad.campaign.entity.Campaign();
+        campaign.setId(java.util.UUID.fromString("1d9c4f70-2a83-4b16-9e5d-7c0a3b8f6e41"));
+        campaign.setAdvertiserId(java.util.UUID.fromString("3e14926d-0c98-5840-abcd-37ec439ddc25"));
+        campaign.setName("Summer Pizza Push");
+        campaign.setStatus(com.fooddelivery.ad.campaign.enums.CampaignStatus.PAUSED);
+        campaign.setDailyBudget(new java.math.BigDecimal("500.00"));
+        campaign.setMaxBid(new java.math.BigDecimal("12.50"));
+        publishCampaign(campaign, com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_PAUSED);
+    }
+
+    private void publishCampaign(com.fooddelivery.ad.campaign.entity.Campaign campaign,
+                                 com.fooddelivery.common.constants.EventType eventType) throws Exception {
+        com.fooddelivery.common.outbox.entity.OutboxEventEntity outboxEvent =
+                com.fooddelivery.common.outbox.entity.OutboxEventEntity.builder()
+                        .id(java.util.UUID.randomUUID())
+                        .aggregateType(com.fooddelivery.common.constants.AggregateType.ADVERTISEMENT)
+                        .aggregateId(campaign.getId().toString())
+                        .eventType(eventType)
+                        .payload(objectMapper.writeValueAsString(campaign))
+                        .createdAt(java.time.LocalDateTime.now())
+                        .build();
+        com.fooddelivery.common.outbox.repository.OutboxEventRepository repo =
+                org.mockito.Mockito.mock(com.fooddelivery.common.outbox.repository.OutboxEventRepository.class);
+        org.mockito.Mockito.when(repo.findTop100ByStatusInOrderByCreatedAtAsc(org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(new java.util.ArrayList<>(java.util.List.of(outboxEvent)));
+        new com.fooddelivery.common.outbox.service.OutboxProcessor(repo, kafkaTemplate).processOutboxEvents();
+    }
 }
