@@ -168,6 +168,24 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <version>4.1.2</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <testFramework>JUNIT5</testFramework>
+                    <failOnNoContracts>false</failOnNoContracts>
+                    <baseClassForTests>com.fooddelivery.contract.ContractTestBase</baseClassForTests>
+                    <baseClassMappings>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*messaging.*</contractPackageRegex>
+                            <baseClassFQN>com.fooddelivery.ad.campaign.contract.BaseMessagingClass</baseClassFQN>
+                        </baseClassMapping>
+                    </baseClassMappings>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-maven-plugin</artifactId>
                 <version>1.4</version>
@@ -250,20 +268,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>pre-integration-test</id>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>post-integration-test</id>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                </executions>
 
                 <configuration>
                     <jmxPort>9015</jmxPort>
