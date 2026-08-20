@@ -37,7 +37,7 @@ public class KafkaAnalyticsConsumer {
     }
 
     @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR)
-    @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id:campaign-service-group}")
     @Transactional
     @io.micrometer.observation.annotation.Observed(name = "analytics.consume", contextualName = "analytics-consumer")
     public void consumeTrackingEvent(String message, @org.springframework.messaging.handler.annotation.Headers java.util.Map<String, Object> headers) {
@@ -51,11 +51,10 @@ public class KafkaAnalyticsConsumer {
 
         String idempotencyKeyStr = "processed_event:" + resolvedEventId;
 
-        if (idempotencyKeyRepository.existsById(idempotencyKeyStr)) {
+        if (idempotencyKeyRepository.tryClaim(idempotencyKeyStr) == 0) {
             log.info("Duplicate tracking event ignored: {}", idempotencyKeyStr);
             return;
         }
-        idempotencyKeyRepository.save(new IdempotencyKey(idempotencyKeyStr));
 
         Map<String, Object> payload;
         try {
@@ -67,33 +66,41 @@ public class KafkaAnalyticsConsumer {
             return;
         }
         try {
+            if (!payload.containsKey(EventPayloadConstants.EVENT_TYPE) || 
+                !payload.containsKey(EventPayloadConstants.CAMPAIGN_ID) || 
+                !payload.containsKey(EventPayloadConstants.ADVERTISER_ID) || 
+                !payload.containsKey(EventPayloadConstants.AMOUNT) ||
+                !payload.containsKey(EventPayloadConstants.TIMESTAMP)) {
+                throw new InvalidTrackingEventException("Missing required fields in payload");
+            }
+
             String eventType = (String) payload.get(EventPayloadConstants.EVENT_TYPE);
             UUID campaignId = UUID.fromString((String) payload.get(EventPayloadConstants.CAMPAIGN_ID));
             UUID advertiserId = UUID.fromString((String) payload.get(EventPayloadConstants.ADVERTISER_ID));
-            BigDecimal amount = new BigDecimal((String) payload.get(EventPayloadConstants.AMOUNT));
-            LocalDate today = LocalDate.now();
-            CampaignPerformance performance = performanceRepository.findByCampaignIdAndDate(campaignId, today).orElseGet(() -> {
-                CampaignPerformance p = new CampaignPerformance();
-                p.setCampaignId(campaignId);
-                p.setAdvertiserId(advertiserId);
-                p.setDate(today);
-                p.setImpressions(0);
-                p.setClicks(0);
-                p.setConversions(0);
-                p.setSpend(BigDecimal.ZERO);
-                return p;
-            });
+            BigDecimal amount = new BigDecimal(payload.get(EventPayloadConstants.AMOUNT).toString());
+            
+            // Business time bucketing
+            long timestampMs = Long.parseLong(payload.get(EventPayloadConstants.TIMESTAMP).toString());
+            LocalDate today = java.time.Instant.ofEpochMilli(timestampMs)
+                                     .atZone(java.time.ZoneId.of(System.getProperty("platform.business-zone", "Asia/Kolkata")))
+                                     .toLocalDate();
+
+            int i = 0, c = 0, v = 0;
+            BigDecimal spend = BigDecimal.ZERO;
+
             if ("IMPRESSION".equals(eventType)) {
-                performance.setImpressions(performance.getImpressions() + 1);
+                i = 1;
+                spend = amount;
             } else if ("CLICK".equals(eventType)) {
-                performance.setClicks(performance.getClicks() + 1);
+                c = 1;
             } else if ("CONVERSION".equals(eventType)) {
-                performance.setConversions(performance.getConversions() + 1);
+                v = 1;
             }
-            performance.setSpend(performance.getSpend().add(amount));
-            performanceRepository.save(performance);
-            log.debug("Updated campaign performance for campaign {}", campaignId);
-        } catch (IllegalArgumentException e) {
+
+            performanceRepository.upsertPerformance(UUID.randomUUID(), campaignId, advertiserId, today, i, c, v, spend);
+            log.debug("Upserted campaign performance for campaign {}", campaignId);
+
+        } catch (InvalidTrackingEventException | IllegalArgumentException e) {
             // Missing required fields or invalid UUID — unrecoverable, discard
             log.error("Dropping tracking event with invalid field values: {}", message, e);
         } catch (Exception e) {

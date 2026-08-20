@@ -6,19 +6,21 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+@com.fooddelivery.ad.campaign.validation.ValidCampaignBudget
 public class CampaignRequest {
     @NotNull
     private UUID advertiserId;
     @NotNull
+    @jakarta.validation.constraints.NotBlank
+    @jakarta.validation.constraints.Size(max = 255)
     private String name;
     @NotNull
-    @PositiveOrZero
+    @jakarta.validation.constraints.Positive
     private BigDecimal dailyBudget;
-    @NotNull
-    @PositiveOrZero
+    @jakarta.validation.constraints.Positive
     private BigDecimal lifetimeBudget;
     @NotNull
-    @PositiveOrZero
+    @jakarta.validation.constraints.Positive
     private BigDecimal maxBid;
     @NotNull
     private Instant startDate;

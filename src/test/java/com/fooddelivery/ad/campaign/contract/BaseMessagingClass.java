@@ -9,20 +9,14 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-@SpringBootTest(classes = BaseMessagingClass.TestConfig.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(classes = BaseMessagingClass.TestConfig.class, webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
 @org.springframework.test.context.ActiveProfiles("contract-test")
 @AutoConfigureMessageVerifier
 @EmbeddedKafka(partitions = 1, topics = {"ad-events"})
 public abstract class BaseMessagingClass {
 
     @org.springframework.boot.SpringBootConfiguration
-    @org.springframework.boot.autoconfigure.EnableAutoConfiguration(exclude = {
-            org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration.class
-    })
+    @org.springframework.boot.autoconfigure.EnableAutoConfiguration
     static class TestConfig {
         @Bean
         public KafkaMessageVerifier kafkaMessageVerifier() {
@@ -43,57 +37,51 @@ public abstract class BaseMessagingClass {
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     /**
-     * Mirrors CampaignServiceImpl.publishOutboxEvent: the payload is the saved Campaign entity
-     * itself, published through the real OutboxProcessor (ADVERTISEMENT -> ad-events, key = id).
+     * Mirrors CampaignServiceImpl.publishOutboxEvent: the payload is the CampaignChangedEvent
+     * published through the real OutboxProcessor (ADVERTISEMENT -> ad-events).
      */
     public void fireAdEvent() throws Exception {
-        com.fooddelivery.ad.campaign.entity.Campaign campaign =
-                new com.fooddelivery.ad.campaign.entity.Campaign();
-        campaign.setId(java.util.UUID.fromString("1d9c4f70-2a83-4b16-9e5d-7c0a3b8f6e41"));
-        campaign.setAdvertiserId(java.util.UUID.fromString("3e14926d-0c98-5840-abcd-37ec439ddc25"));
-        campaign.setName("Summer Pizza Push");
-        campaign.setStatus(com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
-        campaign.setDailyBudget(new java.math.BigDecimal("500.00"));
-        campaign.setMaxBid(new java.math.BigDecimal("12.50"));
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_CREATED, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+    }
+    
+    public void fireAdEventDeleted() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_DELETED, com.fooddelivery.ad.campaign.enums.CampaignStatus.DELETED);
+    }
+    
+    public void fireAdEventPaused() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_PAUSED, com.fooddelivery.ad.campaign.enums.CampaignStatus.PAUSED);
+    }
+    
+    public void fireAdEventResumed() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_RESUMED, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+    }
+    
+    public void fireAdEventUpdated() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_UPDATED, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+    }
+
+    private void fireEvent(com.fooddelivery.common.constants.EventType eventType, com.fooddelivery.ad.campaign.enums.CampaignStatus status) throws Exception {
+        // Built with the builder rather than a positional constructor so that adding a field to
+        // CampaignChangedEvent does not silently shift these arguments.
+        com.fooddelivery.common.event.CampaignChangedEvent event =
+            com.fooddelivery.common.event.CampaignChangedEvent.builder()
+                .campaignId(java.util.UUID.fromString("1d9c4f70-2a83-4b16-9e5d-7c0a3b8f6e41"))
+                .advertiserId(java.util.UUID.fromString("3e14926d-0c98-5840-abcd-37ec439ddc25"))
+                .status(status.name())
+                .maxBid(new java.math.BigDecimal("12.50"))
+                .budget(new java.math.BigDecimal("500.00"))
+                .budgetExhausted(false)
+                .pacingMultiplier(1.0)
+                .schemaVersion(2)
+                .build();
 
         com.fooddelivery.common.outbox.entity.OutboxEventEntity outboxEvent =
                 com.fooddelivery.common.outbox.entity.OutboxEventEntity.builder()
                         .id(java.util.UUID.randomUUID())
                         .aggregateType(com.fooddelivery.common.constants.AggregateType.ADVERTISEMENT)
-                        .aggregateId(campaign.getId().toString())
-                        .eventType(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_CREATED)
-                        .payload(objectMapper.writeValueAsString(campaign))
-                        .createdAt(java.time.LocalDateTime.now())
-                        .build();
-
-        com.fooddelivery.common.outbox.repository.OutboxEventRepository repo =
-                org.mockito.Mockito.mock(com.fooddelivery.common.outbox.repository.OutboxEventRepository.class);
-        org.mockito.Mockito.when(repo.findTop100ByStatusInOrderByCreatedAtAsc(org.mockito.ArgumentMatchers.anyList()))
-                .thenReturn(new java.util.ArrayList<>(java.util.List.of(outboxEvent)));
-        new com.fooddelivery.common.outbox.service.OutboxProcessor(repo, kafkaTemplate).processOutboxEvents();
-    }
-    /** Mirrors CampaignServiceImpl.pauseCampaign -- same Campaign payload, AD_CAMPAIGN_PAUSED. */
-    public void fireAdCampaignPaused() throws Exception {
-        com.fooddelivery.ad.campaign.entity.Campaign campaign =
-                new com.fooddelivery.ad.campaign.entity.Campaign();
-        campaign.setId(java.util.UUID.fromString("1d9c4f70-2a83-4b16-9e5d-7c0a3b8f6e41"));
-        campaign.setAdvertiserId(java.util.UUID.fromString("3e14926d-0c98-5840-abcd-37ec439ddc25"));
-        campaign.setName("Summer Pizza Push");
-        campaign.setStatus(com.fooddelivery.ad.campaign.enums.CampaignStatus.PAUSED);
-        campaign.setDailyBudget(new java.math.BigDecimal("500.00"));
-        campaign.setMaxBid(new java.math.BigDecimal("12.50"));
-        publishCampaign(campaign, com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_PAUSED);
-    }
-
-    private void publishCampaign(com.fooddelivery.ad.campaign.entity.Campaign campaign,
-                                 com.fooddelivery.common.constants.EventType eventType) throws Exception {
-        com.fooddelivery.common.outbox.entity.OutboxEventEntity outboxEvent =
-                com.fooddelivery.common.outbox.entity.OutboxEventEntity.builder()
-                        .id(java.util.UUID.randomUUID())
-                        .aggregateType(com.fooddelivery.common.constants.AggregateType.ADVERTISEMENT)
-                        .aggregateId(campaign.getId().toString())
+                        .aggregateId(event.getCampaignId().toString())
                         .eventType(eventType)
-                        .payload(objectMapper.writeValueAsString(campaign))
+                        .payload(objectMapper.writeValueAsString(event))
                         .createdAt(java.time.LocalDateTime.now())
                         .build();
         com.fooddelivery.common.outbox.repository.OutboxEventRepository repo =

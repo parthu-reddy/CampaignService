@@ -8,5 +8,5 @@ spec:
     app: campaign-service
   ports:
     - protocol: TCP
-      port: 8097
-      targetPort: 8097
+      port: 8088
+      targetPort: 8088

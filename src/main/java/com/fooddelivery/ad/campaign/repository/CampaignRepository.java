@@ -10,4 +10,7 @@ import java.util.UUID;
 public interface CampaignRepository extends JpaRepository<Campaign, UUID> {
     List<Campaign> findByAdvertiserId(UUID advertiserId);
     Page<Campaign> findByAdvertiserId(UUID advertiserId, Pageable pageable);
+    List<Campaign> findByStatus(com.fooddelivery.ad.campaign.enums.CampaignStatus status);
+    List<Campaign> findByAdvertiserIdAndStatus(UUID advertiserId, com.fooddelivery.ad.campaign.enums.CampaignStatus status);
+    java.util.Optional<Campaign> findByIdAndAdvertiserId(UUID id, UUID advertiserId);
 }

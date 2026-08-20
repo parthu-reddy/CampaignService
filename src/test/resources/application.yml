@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:classpath:config/platform-defaults.yml
   sql:
     init:
       mode: always
@@ -17,3 +19,6 @@ spring:
         format_sql: true
   flyway:
     enabled: false
+platform:
+  auction:
+    token-secret: contract-test-secret

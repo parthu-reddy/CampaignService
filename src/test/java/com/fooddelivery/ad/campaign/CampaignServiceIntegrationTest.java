@@ -16,18 +16,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-import io.lettuce.core.RedisClient;
-import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
 
-@SpringBootTest
+@ActiveProfiles("contract-test")
+@SpringBootTest(properties = {"spring.cloud.config.enabled=false", "spring.config.import=", "spring.redis.enabled=false", "spring.main.allow-bean-definition-overriding=true", "eureka.client.enabled=false", "spring.kafka.consumer.group-id=campaign-integration-test"})
 public class CampaignServiceIntegrationTest {
-
-    @MockBean
-    private RedisClient redisClient;
-
-    @MockBean
-    private LettuceBasedProxyManager lettuceProxyManager;
 
     @Autowired
     private CampaignRepository campaignRepository;
@@ -41,6 +33,8 @@ public class CampaignServiceIntegrationTest {
         campaign.setLifetimeBudget(new BigDecimal("1000.00"));
         campaign.setStartDate(Instant.now());
         campaign.setStatus(CampaignStatus.ACTIVE);
+        // Campaign.maxBid is @Column(nullable = false); this fixture predates that constraint.
+        campaign.setMaxBid(new BigDecimal("5.00"));
 
         Campaign savedCampaign = campaignRepository.save(campaign);
 

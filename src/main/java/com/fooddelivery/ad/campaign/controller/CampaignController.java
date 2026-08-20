@@ -4,19 +4,19 @@ import com.fooddelivery.ad.campaign.dto.CampaignRequest;
 import com.fooddelivery.ad.campaign.dto.CampaignResponse;
 import com.fooddelivery.ad.campaign.dto.TopupWalletRequest;
 import com.fooddelivery.ad.campaign.service.CampaignService;
+import com.fooddelivery.common.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.math.BigDecimal;
 import com.fooddelivery.common.client.PaymentServiceClient;
 import com.fooddelivery.common.dto.payment.CreateOrderRequest;
-import com.fooddelivery.ad.campaign.entity.CampaignPerformance;
-import com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/advertisers/{advertiserId}/campaigns")
@@ -26,66 +26,132 @@ public class CampaignController {
 
     private final CampaignService campaignService;
     private final PaymentServiceClient paymentClient;
-    private final CampaignPerformanceRepository performanceRepository;
+    private final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper;
 
-    @PostMapping
-    public ResponseEntity<CampaignResponse> createCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody CampaignRequest request) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
+    public CampaignController(final CampaignService campaignService, final PaymentServiceClient paymentClient, final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper) {
+        this.campaignService = campaignService;
+        this.paymentClient = paymentClient;
+        this.campaignSecurityHelper = campaignSecurityHelper;
+    }
 
+    private Long parseIfMatch(String ifMatch) {
+        if (ifMatch == null || ifMatch.isBlank()) return null;
+        return Long.parseLong(ifMatch.replace("\"", ""));
+    }
+
+    @PostMapping("")
+    public ResponseEntity<ApiResponse<CampaignResponse>> createCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody CampaignRequest request) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
         if (!advertiserId.equals(request.getAdvertiserId())) {
             throw new IllegalArgumentException("Path advertiserId must match request payload");
         }
-        return new ResponseEntity<>(campaignService.createCampaign(request), HttpStatus.CREATED);
+        CampaignResponse response = campaignService.createCampaign(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .eTag("\"" + response.getVersion() + "\"")
+                .body(ApiResponse.success(response, "Campaign created successfully"));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CampaignResponse>> getCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        CampaignResponse response = campaignService.getCampaign(id, advertiserId);
+        return ResponseEntity.ok()
+                .eTag("\"" + response.getVersion() + "\"")
+                .body(ApiResponse.success(response, "Campaign retrieved successfully"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CampaignResponse> updateCampaign(@PathVariable UUID advertiserId, @PathVariable UUID id, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestHeader(value = "If-Match", required = false) Long version, @Validated @RequestBody CampaignRequest request) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
-        return ResponseEntity.ok(campaignService.updateCampaign(id, request, version));
+    public ResponseEntity<ApiResponse<CampaignResponse>> updateCampaign(@PathVariable UUID advertiserId, @PathVariable UUID id, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestHeader(value = "If-Match", required = false) String ifMatchHeader, @Validated @RequestBody CampaignRequest request) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        if (ifMatchHeader == null || ifMatchHeader.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED, "If-Match header is required for updates");
+        }
+        Long version = parseIfMatch(ifMatchHeader);
+        CampaignResponse response = campaignService.updateCampaign(id, advertiserId, request, version);
+        return ResponseEntity.ok()
+                .eTag("\"" + response.getVersion() + "\"")
+                .body(ApiResponse.success(response, "Campaign updated successfully"));
+    }
+
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<ApiResponse<CampaignResponse>> activateCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        CampaignResponse response = campaignService.activateCampaign(id, advertiserId);
+        return ResponseEntity.ok()
+                .eTag("\"" + response.getVersion() + "\"")
+                .body(ApiResponse.success(response, "Campaign activated successfully"));
     }
 
     @PostMapping("/{id}/pause")
-    public ResponseEntity<Void> pauseCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
-        campaignService.pauseCampaign(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponse<Void>> pauseCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        campaignService.pauseCampaign(id, advertiserId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Campaign paused successfully"));
+    }
+
+    @PostMapping("/{id}/resume")
+    public ResponseEntity<ApiResponse<Void>> resumeCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        campaignService.resumeCampaign(id, advertiserId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Campaign resumed successfully"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        campaignService.deleteCampaign(id, advertiserId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Campaign deleted successfully"));
     }
 
     @PostMapping("/wallet/topup")
-    public ResponseEntity<Map<String, String>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody TopupWalletRequest request) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
+    public ResponseEntity<ApiResponse<Map<String, String>>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody TopupWalletRequest request) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
         BigDecimal amountInInr = request.getAmount();
         String internalOrderId = "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString();
         CreateOrderRequest paymentReq = new CreateOrderRequest(internalOrderId, amountInInr);
         String gateway = request.getGatewayName() != null && !request.getGatewayName().isBlank() ? request.getGatewayName() : "RAZORPAY";
         String intentOrOrderId = paymentClient.createOrder(gateway, paymentReq);
-        Map<String, String> response = new HashMap<>();
-        response.put("orderId", intentOrOrderId);
-        return ResponseEntity.ok(response);
+        Map<String, String> data = new HashMap<>();
+        data.put("orderId", intentOrOrderId);
+        return ResponseEntity.ok(ApiResponse.success(data, "Wallet topup initiated"));
     }
 
-    @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<CampaignResponse>> getCampaigns(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
-        return ResponseEntity.ok(campaignService.getCampaignsByAdvertiser(advertiserId, pageable));
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<CampaignResponse>>> getCampaigns(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        return ResponseEntity.ok(ApiResponse.success(campaignService.getCampaignsByAdvertiser(advertiserId, pageable), "Campaigns retrieved successfully"));
     }
 
     @GetMapping("/{id}/performance")
-    public ResponseEntity<List<CampaignPerformance>> getCampaignPerformance(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @PathVariable UUID id) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
-        return ResponseEntity.ok(performanceRepository.findByCampaignIdOrderByDateDesc(id));
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<com.fooddelivery.ad.campaign.dto.CampaignPerformanceResponse>>> getCampaignPerformance(
+            @PathVariable UUID advertiserId, 
+            @RequestHeader(value = "X-User-Id", required = false) String userId, 
+            @PathVariable UUID id,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        if (to == null) to = LocalDate.now();
+        if (from == null) from = to.minusDays(30);
+        if (from.isBefore(to.minusDays(90))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date range cannot exceed 90 days");
+        }
+        return ResponseEntity.ok(ApiResponse.success(campaignService.getCampaignPerformance(id, advertiserId, from, to, pageable), "Performance retrieved successfully"));
     }
 
     @GetMapping("/performance")
-    public ResponseEntity<List<CampaignPerformance>> getAllCampaignPerformance(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        // Gateway handles RBAC. A restaurant user (userId) manages the restaurant (advertiserId).
-        return ResponseEntity.ok(performanceRepository.findByAdvertiserIdOrderByDateDesc(advertiserId));
-    }
-
-    @java.lang.SuppressWarnings("all")
-    public CampaignController(final CampaignService campaignService, final PaymentServiceClient paymentClient, final CampaignPerformanceRepository performanceRepository) {
-        this.campaignService = campaignService;
-        this.paymentClient = paymentClient;
-        this.performanceRepository = performanceRepository;
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<com.fooddelivery.ad.campaign.dto.CampaignPerformanceResponse>>> getAllCampaignPerformance(
+            @PathVariable UUID advertiserId, 
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
+        if (to == null) to = LocalDate.now();
+        if (from == null) from = to.minusDays(30);
+        if (from.isBefore(to.minusDays(90))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date range cannot exceed 90 days");
+        }
+        return ResponseEntity.ok(ApiResponse.success(campaignService.getAllCampaignPerformance(advertiserId, from, to, pageable), "Performance retrieved successfully"));
     }
 }

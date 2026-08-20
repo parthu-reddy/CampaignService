@@ -15,8 +15,12 @@ public class AdvertiserProfile {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId; // Links to IdentityService
+    
+    @Column(name = "external_ref", unique = true)
+    private String externalRef; // Links to external systems (e.g. brandId)
+    
     @Column(name = "company_name", nullable = false)
     private String companyName;
     @Column(name = "wallet_balance_id")
@@ -40,6 +44,11 @@ public class AdvertiserProfile {
     @java.lang.SuppressWarnings("all")
     public String getUserId() {
         return this.userId;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getExternalRef() {
+        return this.externalRef;
     }
 
     @java.lang.SuppressWarnings("all")
@@ -70,6 +79,11 @@ public class AdvertiserProfile {
     @java.lang.SuppressWarnings("all")
     public void setUserId(final String userId) {
         this.userId = userId;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public void setExternalRef(final String externalRef) {
+        this.externalRef = externalRef;
     }
 
     @java.lang.SuppressWarnings("all")

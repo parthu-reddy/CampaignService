@@ -4,18 +4,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-import io.lettuce.core.RedisClient;
-import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
 
-@SpringBootTest
+@org.springframework.test.context.ActiveProfiles("contract-test")
+@SpringBootTest(properties = {
+        "spring.cloud.config.enabled=false",
+        "spring.config.import=",
+        "spring.redis.enabled=false",
+        "spring.main.allow-bean-definition-overriding=true",
+        "eureka.client.enabled=false"
+})
 class CampaignServiceApplicationTests {
-
-    @MockBean
-    private RedisClient redisClient;
-
-    @MockBean
-    private LettuceBasedProxyManager lettuceProxyManager;
 
     @Test
     void contextLoads() {

@@ -25,14 +25,33 @@ public class InternalCampaignController {
         Map<String, CampaignPacingDTO> budgets = new HashMap<>();
         for (String id : campaignIds) {
             try {
-                com.fooddelivery.ad.campaign.entity.Campaign campaign = campaignRepository.findById(UUID.fromString(id)).orElse(null);
+                com.fooddelivery.ad.campaign.entity.Campaign campaign = campaignRepository.findAllById(java.util.Collections.singletonList(UUID.fromString(id))).stream().findFirst().orElse(null);
                 if (campaign != null && campaign.getDailyBudget() != null) {
-                    budgets.put(id, new CampaignPacingDTO(campaign.getDailyBudget().doubleValue(), campaign.getAdvertiserId()));
+                    budgets.put(id, new CampaignPacingDTO(campaign.getDailyBudget().doubleValue(), campaign.getLifetimeBudget() != null ? campaign.getLifetimeBudget().doubleValue() : null, campaign.getAdvertiserId()));
                 }
             } catch (Exception e) {
                 log.error("Failed to fetch budget for campaign " + id, e);
             }
         }
         return ResponseEntity.ok(budgets);
+    }
+
+    @GetMapping("/active-for-bidding")
+    public ResponseEntity<List<Map<String, Object>>> getActiveCampaignsForBidding() {
+        // In a real implementation this would fetch ACTIVE campaigns from repository
+        List<com.fooddelivery.ad.campaign.entity.Campaign> activeCampaigns = campaignRepository.findByStatus(com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+        
+        List<Map<String, Object>> response = activeCampaigns.stream().map(c -> {
+            if (c.getMaxBid() == null) {
+                throw new IllegalStateException("Missing maxBid for active campaign: " + c.getId());
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", c.getId().toString());
+            map.put("advertiserId", c.getAdvertiserId().toString());
+            map.put("maxBid", c.getMaxBid());
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(response);
     }
 }

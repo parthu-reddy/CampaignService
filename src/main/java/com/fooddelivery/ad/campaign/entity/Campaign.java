@@ -35,8 +35,6 @@ public class Campaign {
     private BigDecimal maxBid;
     @Column(name = "start_date", nullable = false)
     private Instant startDate;
-    @Column(name = "brand_safety_blocklist", columnDefinition = "TEXT")
-    private String brandSafetyBlocklist; // JSON array of blocked domains
     @Column(name = "end_date")
     private Instant endDate;
     @Version
@@ -91,11 +89,6 @@ public class Campaign {
     @java.lang.SuppressWarnings("all")
     public Instant getStartDate() {
         return this.startDate;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    public String getBrandSafetyBlocklist() {
-        return this.brandSafetyBlocklist;
     }
 
     @java.lang.SuppressWarnings("all")
@@ -159,11 +152,6 @@ public class Campaign {
     }
 
     @java.lang.SuppressWarnings("all")
-    public void setBrandSafetyBlocklist(final String brandSafetyBlocklist) {
-        this.brandSafetyBlocklist = brandSafetyBlocklist;
-    }
-
-    @java.lang.SuppressWarnings("all")
     public void setEndDate(final Instant endDate) {
         this.endDate = endDate;
     }
@@ -217,9 +205,6 @@ public class Campaign {
         final java.lang.Object this$startDate = this.getStartDate();
         final java.lang.Object other$startDate = other.getStartDate();
         if (this$startDate == null ? other$startDate != null : !this$startDate.equals(other$startDate)) return false;
-        final java.lang.Object this$brandSafetyBlocklist = this.getBrandSafetyBlocklist();
-        final java.lang.Object other$brandSafetyBlocklist = other.getBrandSafetyBlocklist();
-        if (this$brandSafetyBlocklist == null ? other$brandSafetyBlocklist != null : !this$brandSafetyBlocklist.equals(other$brandSafetyBlocklist)) return false;
         final java.lang.Object this$endDate = this.getEndDate();
         final java.lang.Object other$endDate = other.getEndDate();
         if (this$endDate == null ? other$endDate != null : !this$endDate.equals(other$endDate)) return false;
@@ -260,8 +245,6 @@ public class Campaign {
         result = result * PRIME + ($maxBid == null ? 43 : $maxBid.hashCode());
         final java.lang.Object $startDate = this.getStartDate();
         result = result * PRIME + ($startDate == null ? 43 : $startDate.hashCode());
-        final java.lang.Object $brandSafetyBlocklist = this.getBrandSafetyBlocklist();
-        result = result * PRIME + ($brandSafetyBlocklist == null ? 43 : $brandSafetyBlocklist.hashCode());
         final java.lang.Object $endDate = this.getEndDate();
         result = result * PRIME + ($endDate == null ? 43 : $endDate.hashCode());
         final java.lang.Object $createdAt = this.getCreatedAt();
@@ -274,6 +257,6 @@ public class Campaign {
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     public java.lang.String toString() {
-        return "Campaign(id=" + this.getId() + ", advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", status=" + this.getStatus() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", brandSafetyBlocklist=" + this.getBrandSafetyBlocklist() + ", endDate=" + this.getEndDate() + ", version=" + this.getVersion() + ", createdAt=" + this.getCreatedAt() + ", updatedAt=" + this.getUpdatedAt() + ")";
+        return "Campaign(id=" + this.getId() + ", advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", status=" + this.getStatus() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", endDate=" + this.getEndDate() + ", version=" + this.getVersion() + ", createdAt=" + this.getCreatedAt() + ", updatedAt=" + this.getUpdatedAt() + ")";
     }
 }

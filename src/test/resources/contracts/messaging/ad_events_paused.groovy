@@ -1,25 +1,26 @@
 package contracts.messaging
 
 /*
- * ad-events / AD_CAMPAIGN_PAUSED, from CampaignServiceImpl:80 (pauseCampaign). Same flat Campaign
- * payload as ad_events, different event type -- which matters: BiddingEngine removes the campaign
- * from the matcher on this, and CommunicationIntegration's AdNotificationListener only reacts to
- * AD_CAMPAIGN_PAUSED and AD_BUDGET_ALERT, so AD_CAMPAIGN_CREATED alone cannot exercise it.
+ * Contract for AD_CAMPAIGN_PAUSED event emitted by CampaignService.
+ * Uses the canonical CampaignChangedEvent schema.
  */
 org.springframework.cloud.contract.spec.Contract.make {
-    description("Should publish the paused Campaign to ad-events")
+    description("Should publish AD_CAMPAIGN_PAUSED to ad-events")
     label("ad_events_paused")
-    input { triggeredBy('fireAdCampaignPaused()') }
+    input { triggeredBy('fireAdEventPaused()') }
     outputMessage {
         sentTo('ad-events')
-        headers { header('eventType', 'AD_CAMPAIGN_PAUSED') }
+        headers {
+            header('eventType', 'AD_CAMPAIGN_PAUSED')
+            header('aggregateType', 'ADVERTISEMENT')
+        }
         body([
-            id: $(producer(regex('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'))),
+            campaignId: $(producer(regex('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'))),
             advertiserId: $(producer(regex('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'))),
-            name: "Summer Pizza Push",
             status: "PAUSED",
-            dailyBudget: 500.00,
-            maxBid: 12.50
+            maxBid: 12.50,
+            budget: 500.00,
+            budgetExhausted: false
         ])
     }
 }
