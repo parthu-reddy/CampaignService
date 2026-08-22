@@ -14,8 +14,7 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.math.BigDecimal;
-import com.fooddelivery.common.client.PaymentServiceClient;
-import com.fooddelivery.common.dto.payment.CreateOrderRequest;
+import com.fooddelivery.common.client.WalletServiceClient;
 import java.time.LocalDate;
 
 @RestController
@@ -25,12 +24,12 @@ public class CampaignController {
     @java.lang.SuppressWarnings("all")
 
     private final CampaignService campaignService;
-    private final PaymentServiceClient paymentClient;
+    private final WalletServiceClient walletClient;
     private final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper;
 
-    public CampaignController(final CampaignService campaignService, final PaymentServiceClient paymentClient, final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper) {
+    public CampaignController(final CampaignService campaignService, final WalletServiceClient walletClient, final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper) {
         this.campaignService = campaignService;
-        this.paymentClient = paymentClient;
+        this.walletClient = walletClient;
         this.campaignSecurityHelper = campaignSecurityHelper;
     }
 
@@ -104,16 +103,16 @@ public class CampaignController {
     }
 
     @PostMapping("/wallet/topup")
-    public ResponseEntity<ApiResponse<Map<String, String>>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @Validated @RequestBody TopupWalletRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = "X-User-Id", required = false) String userId, @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey, @Validated @RequestBody TopupWalletRequest request) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
-        BigDecimal amountInInr = request.getAmount();
-        String internalOrderId = "WALLET_" + advertiserId.toString() + "_" + UUID.randomUUID().toString();
-        CreateOrderRequest paymentReq = new CreateOrderRequest(internalOrderId, amountInInr);
-        String gateway = request.getGatewayName() != null && !request.getGatewayName().isBlank() ? request.getGatewayName() : "RAZORPAY";
-        String intentOrOrderId = paymentClient.createOrder(gateway, paymentReq);
-        Map<String, String> data = new HashMap<>();
-        data.put("orderId", intentOrOrderId);
-        return ResponseEntity.ok(ApiResponse.success(data, "Wallet topup initiated"));
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = UUID.randomUUID().toString();
+        }
+        
+        // Let WalletServiceClient handle the request. Use Object because TopupWalletRequest is in campaign service dto package, but compatible format.
+        ApiResponse<Map<String, String>> gatewayResponse = walletClient.topupWallet(advertiserId, request, idempotencyKey);
+        
+        return ResponseEntity.ok(gatewayResponse);
     }
 
     @GetMapping("")
@@ -131,7 +130,7 @@ public class CampaignController {
             @RequestParam(required = false) LocalDate to,
             @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
-        if (to == null) to = LocalDate.now();
+        if (to == null) to = LocalDate.now(java.time.ZoneOffset.UTC);
         if (from == null) from = to.minusDays(30);
         if (from.isBefore(to.minusDays(90))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date range cannot exceed 90 days");
@@ -147,7 +146,7 @@ public class CampaignController {
             @RequestParam(required = false) LocalDate to,
             @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
-        if (to == null) to = LocalDate.now();
+        if (to == null) to = LocalDate.now(java.time.ZoneOffset.UTC);
         if (from == null) from = to.minusDays(30);
         if (from.isBefore(to.minusDays(90))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date range cannot exceed 90 days");

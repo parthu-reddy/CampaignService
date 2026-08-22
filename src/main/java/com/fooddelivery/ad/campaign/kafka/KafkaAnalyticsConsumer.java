@@ -29,11 +29,15 @@ public class KafkaAnalyticsConsumer {
     private final CampaignPerformanceRepository performanceRepository;
     private final ObjectMapper objectMapper;
     private final IIdempotencyKeyRepository idempotencyKeyRepository;
+    private final java.time.Clock clock;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
-    public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository) {
+    public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository, java.time.Clock clock, io.micrometer.core.instrument.MeterRegistry meterRegistry) {
         this.performanceRepository = performanceRepository;
         this.objectMapper = objectMapper;
         this.idempotencyKeyRepository = idempotencyKeyRepository;
+        this.clock = clock;
+        this.meterRegistry = meterRegistry;
     }
 
     @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR)
@@ -41,6 +45,7 @@ public class KafkaAnalyticsConsumer {
     @Transactional
     @io.micrometer.observation.annotation.Observed(name = "analytics.consume", contextualName = "analytics-consumer")
     public void consumeTrackingEvent(String message, @org.springframework.messaging.handler.annotation.Headers java.util.Map<String, Object> headers) {
+        meterRegistry.counter("kafka_consumer_records_consumed_total", "topic", KafkaConstants.TOPIC_AD_TRACKING_EVENTS).increment();
         String extractedEventId = com.fooddelivery.common.util.KafkaHeaderUtils.extractHeaderValue(headers, "eventId");
         final String resolvedEventId;
         if (extractedEventId == null) {
@@ -63,6 +68,7 @@ public class KafkaAnalyticsConsumer {
         } catch (Exception e) {
             // Malformed JSON is unrecoverable — log and discard to prevent infinite retry loop
             log.error("Dropping malformed tracking event (unparseable JSON): {}", message, e);
+            meterRegistry.counter("campaign_event_dropped_total", "reason", "malformed").increment();
             return;
         }
         try {
@@ -82,7 +88,7 @@ public class KafkaAnalyticsConsumer {
             // Business time bucketing
             long timestampMs = Long.parseLong(payload.get(EventPayloadConstants.TIMESTAMP).toString());
             LocalDate today = java.time.Instant.ofEpochMilli(timestampMs)
-                                     .atZone(java.time.ZoneId.of(System.getProperty("platform.business-zone", "Asia/Kolkata")))
+                                     .atZone(clock.getZone())
                                      .toLocalDate();
 
             int i = 0, c = 0, v = 0;
@@ -103,6 +109,7 @@ public class KafkaAnalyticsConsumer {
         } catch (InvalidTrackingEventException | IllegalArgumentException e) {
             // Missing required fields or invalid UUID — unrecoverable, discard
             log.error("Dropping tracking event with invalid field values: {}", message, e);
+            meterRegistry.counter("campaign_event_dropped_total", "reason", "malformed").increment();
         } catch (Exception e) {
             // Infrastructure/transient error (DB timeout, etc.) — rethrow so Kafka retries or sends to DLQ
             log.error("Transient error processing tracking event, will be retried: {}", e.getMessage(), e);
@@ -113,5 +120,6 @@ public class KafkaAnalyticsConsumer {
     @DltHandler
     public void handleDlt(Object message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         log.error("Tracking event failed all retries and sent to DLT: {} - {}", topic, message);
+        meterRegistry.counter("kafka_dlt_depth_total", "topic", topic).increment();
     }
 }

@@ -43,7 +43,7 @@ public class CampaignAlertConsumer {
         String eventTypeStr = EventPayloadUtils.resolveEventType(root, headers);
         
         if (EventType.AD_BUDGET_ALERT.name().equals(eventTypeStr)) {
-            JsonNode payload = EventPayloadUtils.unwrapPayload(root);
+            JsonNode payload = root;
             
             String eventId = root.hasNonNull("eventId") ? root.get("eventId").asText() : UUID.randomUUID().toString();
             String idempotencyKeyStr = "processed_event:budget_alert:" + eventId;

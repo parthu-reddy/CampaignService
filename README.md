@@ -24,9 +24,8 @@ graph TB
         GW["API Gateway<br/>Rate Limiting · TLS · Load Shedding"]
 
         subgraph CS["CampaignService"]
-            CS_API["REST/gRPC APIs"]
+            CS_API["REST APIs"]
             CS_DB[("PostgreSQL<br/>ACID")]
-            CS_CDN["CDN<br/>Creative Assets"]
         end
 
         subgraph BE["BiddingEngine"]
@@ -35,12 +34,12 @@ graph TB
             Index["RoaringBitmap<br/>Inverted Index"]
             Matcher["CampaignMatcher"]
             Pricer["BidPricer<br/>PricingStrategy"]
-            Disruptor["LMAX Disruptor<br/>Ring Buffer"]
+            // Design Intent: To be replaced by LMAX Disruptor
         end
 
         subgraph BPS["BudgetLimitingService"]
             PacingLoop["Async Control Loop"]
-            MLModel["ML CTR Model"]
+            // Design Intent: To incorporate ML CTR Model
             BPS_Store[("Time-Series DB<br/>+ Redis")]
         end
 
@@ -58,30 +57,25 @@ graph TB
     Advertiser -->|"Auth / CRUD"| GW
     GW --> CS_API
     CS_API --> CS_DB
-    CS_API -->|"Upload Creatives"| CS_CDN
     CS_API -->|"Campaign Changes"| Kafka
 
     SSP -->|"BidRequest<br/>Protobuf"| GW
     GW --> Parser
     Parser --> Cache
     Cache --> Index
-    Index --> Matcher
-    Matcher --> Disruptor
-    Disruptor --> Pricer
+    Matcher --> Pricer
     Pricer -->|"BidResponse<br/>+ SeatBid"| GW
     GW -->|"< 50ms"| SSP
 
     Kafka -->|"Index Updates"| Index
     Kafka -->|"Pacing Events"| PacingLoop
-    PacingLoop --> MLModel
     PacingLoop --> BPS_Store
     BPS_Store -->|"Pacing Multiplier s"| Cache
 
     Browser -->|"Tracking Pixel"| TrackEndpoint
     TrackEndpoint --> Decrypt
     Decrypt --> Trackers
-    Trackers --> Disruptor
-    Disruptor -->|"Async Buffer"| Kafka
+    Trackers -->|"Async Buffer"| Kafka
     Kafka --> ClickHouse
     Kafka -->|"Billing Event"| BWS
     BWS -->|"Step 1: Saga"| BWS
@@ -100,7 +94,6 @@ graph TB
 - **Campaign Management**: CRUD operations for Campaigns, Ad Groups, and Ad Creatives (supporting banner, video VAST, and native formats).
 - **Targeting Configurations**: Managing contextual, geographic, demographic, and behavioral targeting rules. Supports defining blocklists for brand safety and dayparting rules.
 - **Budget Management**: Defining daily and lifetime financial budgets.
-- **Creative Storage**: Handling creative asset uploads to object storage (e.g., S3/GCS) fronted by a CDN for low-latency global serving.
 - **State Management**: Managing campaign lifecycle states (Active, Paused, Completed, Archived).
 
 ## Use Case Validation
@@ -140,8 +133,8 @@ sequenceDiagram
 
     alt Campaign Created / Updated
         BE->>Index: Build new RoaringBitmap snapshot
-        BE->>Index: RCU swap — atomic reference update
-        Note over Index: No read threads blocked during update
+        BE->>Index: ReadWriteLock update
+        Note over Index: Uses ReentrantReadWriteLock over HashMaps
     else Campaign Paused
         BE->>Index: Remove campaign from bitmap
         Note over BE: In-flight bids still honored for billing

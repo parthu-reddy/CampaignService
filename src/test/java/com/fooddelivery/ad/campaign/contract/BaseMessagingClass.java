@@ -60,14 +60,50 @@ public abstract class BaseMessagingClass {
         fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_UPDATED, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
     }
 
+    public void fireAdEventCompleted() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_COMPLETED, com.fooddelivery.ad.campaign.enums.CampaignStatus.COMPLETED);
+    }
+
+    public void fireAdEventBudgetExhausted() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_BUDGET_EXHAUSTED, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+    }
+
+    public void fireAdEventPacingUpdated() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CAMPAIGN_PACING_UPDATED, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+    }
+
+    public void fireAdBudgetAlert() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_BUDGET_ALERT, com.fooddelivery.ad.campaign.enums.CampaignStatus.ACTIVE);
+    }
+
+    public void fireAdEventCreativeApproved() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CREATIVE_APPROVED, "ACTIVE");
+    }
+
+    public void fireAdEventCreativePending() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CREATIVE_PENDING, "PENDING");
+    }
+
+    public void fireAdEventCreativeRejected() throws Exception {
+        fireEvent(com.fooddelivery.common.constants.EventType.AD_CREATIVE_REJECTED, "REJECTED");
+    }
+
     private void fireEvent(com.fooddelivery.common.constants.EventType eventType, com.fooddelivery.ad.campaign.enums.CampaignStatus status) throws Exception {
+        fireEvent(eventType, status.name());
+    }
+
+    /**
+     * Creative review events carry the creative's review status (PENDING / REJECTED),
+     * which is not a CampaignStatus value, so the status travels as a raw string.
+     */
+    private void fireEvent(com.fooddelivery.common.constants.EventType eventType, String status) throws Exception {
         // Built with the builder rather than a positional constructor so that adding a field to
         // CampaignChangedEvent does not silently shift these arguments.
         com.fooddelivery.common.event.CampaignChangedEvent event =
             com.fooddelivery.common.event.CampaignChangedEvent.builder()
                 .campaignId(java.util.UUID.fromString("1d9c4f70-2a83-4b16-9e5d-7c0a3b8f6e41"))
                 .advertiserId(java.util.UUID.fromString("3e14926d-0c98-5840-abcd-37ec439ddc25"))
-                .status(status.name())
+                .status(status)
                 .maxBid(new java.math.BigDecimal("12.50"))
                 .budget(new java.math.BigDecimal("500.00"))
                 .budgetExhausted(false)
@@ -88,6 +124,6 @@ public abstract class BaseMessagingClass {
                 org.mockito.Mockito.mock(com.fooddelivery.common.outbox.repository.OutboxEventRepository.class);
         org.mockito.Mockito.when(repo.findTop100ByStatusInOrderByCreatedAtAsc(org.mockito.ArgumentMatchers.anyList()))
                 .thenReturn(new java.util.ArrayList<>(java.util.List.of(outboxEvent)));
-        new com.fooddelivery.common.outbox.service.OutboxProcessor(repo, kafkaTemplate).processOutboxEvents();
+        new com.fooddelivery.common.outbox.service.OutboxProcessor(repo, kafkaTemplate, new io.micrometer.core.instrument.simple.SimpleMeterRegistry()).processOutboxEvents();
     }
 }

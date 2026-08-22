@@ -8,30 +8,41 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
+/**
+ * Base class for the generated HTTP contract tests under {@code contracts/http}.
+ *
+ * <p>{@link InternalCampaignController#getDailyBudgets} looks up campaigns with
+ * {@code findAllById(ids)} — not {@code findById} — so the stubs below
+ * must match that call shape or the controller sees an empty result and returns {}.
+ */
 @org.springframework.test.context.ActiveProfiles("contract-test")
 public class ContractTestBase {
+
+    private static final UUID CAMPAIGN_ONE = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final UUID CAMPAIGN_TWO = UUID.fromString("22222222-2222-2222-2222-222222222222");
 
     @BeforeEach
     public void setup() {
         CampaignRepository campaignRepository = Mockito.mock(CampaignRepository.class);
 
         Campaign cmp1 = new Campaign();
-        cmp1.setId(UUID.fromString("11111111-1111-1111-1111-111111111111"));
+        cmp1.setId(CAMPAIGN_ONE);
         cmp1.setDailyBudget(new BigDecimal("500.00"));
+        cmp1.setLifetimeBudget(new BigDecimal("5000.00"));
         cmp1.setAdvertiserId(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
 
         Campaign cmp2 = new Campaign();
-        cmp2.setId(UUID.fromString("22222222-2222-2222-2222-222222222222"));
+        cmp2.setId(CAMPAIGN_TWO);
         cmp2.setDailyBudget(new BigDecimal("1500.50"));
+        cmp2.setLifetimeBudget(new BigDecimal("15000.50"));
         cmp2.setAdvertiserId(UUID.fromString("550e8400-e29b-41d4-a716-446655440001"));
 
-        Mockito.when(campaignRepository.findById(UUID.fromString("11111111-1111-1111-1111-111111111111")))
-               .thenReturn(Optional.of(cmp1));
-        Mockito.when(campaignRepository.findById(UUID.fromString("22222222-2222-2222-2222-222222222222")))
-               .thenReturn(Optional.of(cmp2));
+        Mockito.when(campaignRepository.findAllById(Mockito.anyIterable()))
+               .thenReturn(List.of(cmp1, cmp2));
 
         RestAssuredMockMvc.standaloneSetup(new InternalCampaignController(campaignRepository));
     }

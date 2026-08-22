@@ -36,7 +36,6 @@ public class CampaignLifecycleScheduler {
     }
 
     @Scheduled(fixedDelayString = "${campaign.lifecycle.interval.ms:60000}")
-    @Transactional
     public void sweepCampaigns() {
         Boolean acquired = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "locked", Duration.ofSeconds(30));
         if (Boolean.TRUE.equals(acquired)) {
@@ -44,21 +43,37 @@ public class CampaignLifecycleScheduler {
                 java.time.Instant now = java.time.Instant.now(clock);
                 
                 // SCHEDULED and startDate <= now -> ACTIVE
-                List<Campaign> scheduledCampaigns = campaignRepository.findByStatus(CampaignStatus.SCHEDULED);
-                for (Campaign campaign : scheduledCampaigns) {
-                    if (!campaign.getStartDate().isAfter(now)) {
-                        log.info("Activating scheduled campaign {}", campaign.getId());
-                        campaignService.resumeCampaign(campaign.getId(), campaign.getAdvertiserId());
+                int page = 0;
+                while (true) {
+                    org.springframework.data.domain.Page<Campaign> pageResult = campaignRepository.findByStatusAndStartDateLessThanEqual(
+                            CampaignStatus.SCHEDULED, now, org.springframework.data.domain.PageRequest.of(page, 100));
+                    for (Campaign campaign : pageResult) {
+                        try {
+                            log.info("Activating scheduled campaign {}", campaign.getId());
+                            campaignService.resumeCampaign(campaign.getId(), campaign.getAdvertiserId());
+                        } catch (Exception e) {
+                            log.error("Failed to activate campaign {}", campaign.getId(), e);
+                        }
                     }
+                    if (!pageResult.hasNext()) break;
+                    page++;
                 }
                 
                 // ACTIVE and endDate < now -> COMPLETED
-                List<Campaign> activeCampaigns = campaignRepository.findByStatus(CampaignStatus.ACTIVE);
-                for (Campaign campaign : activeCampaigns) {
-                    if (campaign.getEndDate() != null && campaign.getEndDate().isBefore(now)) {
-                        log.info("Completing expired campaign {}", campaign.getId());
-                        campaignService.completeCampaign(campaign.getId(), campaign.getAdvertiserId());
+                page = 0;
+                while (true) {
+                    org.springframework.data.domain.Page<Campaign> pageResult = campaignRepository.findByStatusAndEndDateLessThan(
+                            CampaignStatus.ACTIVE, now, org.springframework.data.domain.PageRequest.of(page, 100));
+                    for (Campaign campaign : pageResult) {
+                        try {
+                            log.info("Completing expired campaign {}", campaign.getId());
+                            campaignService.completeCampaign(campaign.getId(), campaign.getAdvertiserId());
+                        } catch (Exception e) {
+                            log.error("Failed to complete campaign {}", campaign.getId(), e);
+                        }
                     }
+                    if (!pageResult.hasNext()) break;
+                    page++;
                 }
             } finally {
                 redisTemplate.delete(LOCK_KEY);

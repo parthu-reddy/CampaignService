@@ -13,4 +13,6 @@ public interface CampaignRepository extends JpaRepository<Campaign, UUID> {
     List<Campaign> findByStatus(com.fooddelivery.ad.campaign.enums.CampaignStatus status);
     List<Campaign> findByAdvertiserIdAndStatus(UUID advertiserId, com.fooddelivery.ad.campaign.enums.CampaignStatus status);
     java.util.Optional<Campaign> findByIdAndAdvertiserId(UUID id, UUID advertiserId);
+    Page<Campaign> findByStatusAndStartDateLessThanEqual(com.fooddelivery.ad.campaign.enums.CampaignStatus status, java.time.Instant date, Pageable pageable);
+    Page<Campaign> findByStatusAndEndDateLessThan(com.fooddelivery.ad.campaign.enums.CampaignStatus status, java.time.Instant date, Pageable pageable);
 }

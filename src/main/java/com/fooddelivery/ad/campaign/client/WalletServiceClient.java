@@ -9,6 +9,6 @@ import java.util.UUID;
 @FeignClient(name = "wallet-service")
 public interface WalletServiceClient {
     
-    @GetMapping("/api/v1/wallets/{entityId}/{entityType}")
-    Object getWallet(@PathVariable("entityId") UUID entityId, @PathVariable("entityType") String entityType);
+    @GetMapping("/api/v1/wallets/{entityType}/{entityId}")
+    Object getWallet(@PathVariable("entityType") String entityType, @PathVariable("entityId") UUID entityId);
 }

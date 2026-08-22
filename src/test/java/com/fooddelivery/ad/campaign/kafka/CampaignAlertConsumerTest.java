@@ -44,10 +44,8 @@ class CampaignAlertConsumerTest {
         String payload = String.format("""
             {
                 "eventType": "AD_BUDGET_ALERT",
-                "payload": {
-                    "advertiserId": "%s",
-                    "campaignId": "%s"
-                },
+                "advertiserId": "%s",
+                "campaignId": "%s",
                 "eventId": "test-event-123"
             }
         """, advertiserId.toString(), campaignB.toString());

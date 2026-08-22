@@ -2,11 +2,20 @@ server:
   port: ${SERVER_PORT:8088}
 spring:
   config:
-    import: optional:classpath:config/platform-defaults.yml,optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   application:
     name: campaign-service
   profiles:
     active: dev
+  kafka:
+    consumer:
+      group-id: campaign-service-group
+    producer:
+      acks: all
+      retries: 3
+  redis:
+    host: localhost
+    port: 6379
   datasource:
     url: jdbc:postgresql://localhost:5432/campaign_db
     username: postgres

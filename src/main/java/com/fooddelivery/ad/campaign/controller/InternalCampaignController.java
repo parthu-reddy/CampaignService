@@ -23,16 +23,27 @@ public class InternalCampaignController {
     @PostMapping("/batch/budgets")
     public ResponseEntity<Map<String, CampaignPacingDTO>> getDailyBudgets(@RequestBody List<String> campaignIds) {
         Map<String, CampaignPacingDTO> budgets = new HashMap<>();
-        for (String id : campaignIds) {
-            try {
-                com.fooddelivery.ad.campaign.entity.Campaign campaign = campaignRepository.findAllById(java.util.Collections.singletonList(UUID.fromString(id))).stream().findFirst().orElse(null);
-                if (campaign != null && campaign.getDailyBudget() != null) {
-                    budgets.put(id, new CampaignPacingDTO(campaign.getDailyBudget().doubleValue(), campaign.getLifetimeBudget() != null ? campaign.getLifetimeBudget().doubleValue() : null, campaign.getAdvertiserId()));
+        
+        try {
+            List<UUID> uuidList = campaignIds.stream()
+                .map(UUID::fromString)
+                .collect(java.util.stream.Collectors.toList());
+                
+            List<com.fooddelivery.ad.campaign.entity.Campaign> campaigns = campaignRepository.findAllById(uuidList);
+            
+            for (com.fooddelivery.ad.campaign.entity.Campaign campaign : campaigns) {
+                if (campaign.getDailyBudget() != null) {
+                    budgets.put(campaign.getId().toString(), new CampaignPacingDTO(
+                        campaign.getDailyBudget().doubleValue(), 
+                        campaign.getLifetimeBudget() != null ? campaign.getLifetimeBudget().doubleValue() : null, 
+                        campaign.getAdvertiserId()
+                    ));
                 }
-            } catch (Exception e) {
-                log.error("Failed to fetch budget for campaign " + id, e);
             }
+        } catch (Exception e) {
+            log.error("Failed to fetch budget for campaigns batch", e);
         }
+        
         return ResponseEntity.ok(budgets);
     }
 

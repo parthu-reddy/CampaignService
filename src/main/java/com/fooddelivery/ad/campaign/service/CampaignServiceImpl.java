@@ -47,6 +47,9 @@ public class CampaignServiceImpl implements CampaignService {
         campaign.setMaxBid(request.getMaxBid());
         campaign.setStartDate(request.getStartDate());
         campaign.setEndDate(request.getEndDate());
+        if (request.getFrequencyCap() != null) {
+            campaign.setFrequencyCap(request.getFrequencyCap());
+        }
         campaign.setStatus(CampaignStatus.DRAFT);
         Campaign saved = campaignRepository.save(campaign);
         publishOutboxEvent(saved.getId(), EventType.AD_CAMPAIGN_CREATED, saved);
@@ -66,6 +69,9 @@ public class CampaignServiceImpl implements CampaignService {
         campaign.setMaxBid(request.getMaxBid());
         campaign.setStartDate(request.getStartDate());
         campaign.setEndDate(request.getEndDate());
+        if (request.getFrequencyCap() != null) {
+            campaign.setFrequencyCap(request.getFrequencyCap());
+        }
         Campaign saved = campaignRepository.save(campaign);
         publishOutboxEvent(saved.getId(), EventType.AD_CAMPAIGN_UPDATED, saved);
         return mapToResponse(saved);
@@ -116,7 +122,7 @@ public class CampaignServiceImpl implements CampaignService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void resumeCampaign(UUID id, UUID advertiserId) {
         Campaign campaign = campaignRepository.findByIdAndAdvertiserId(id, advertiserId).orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + id));
         if (campaign.getLifetimeBudget() != null) {
@@ -155,11 +161,13 @@ public class CampaignServiceImpl implements CampaignService {
         return campaignRepository.findByAdvertiserId(advertiserId, pageable).map(this::mapToResponse);
     }
 
+    @Override
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void completeCampaign(UUID id, UUID advertiserId) {
         Campaign campaign = campaignRepository.findByIdAndAdvertiserId(id, advertiserId).orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + id));
         transitionState(campaign, CampaignStatus.COMPLETED);
         Campaign saved = campaignRepository.save(campaign);
-        publishOutboxEvent(id, EventType.AD_CAMPAIGN_DELETED, saved);
+        publishOutboxEvent(id, EventType.AD_CAMPAIGN_COMPLETED, saved);
     }
 
     private void transitionState(Campaign campaign, CampaignStatus toState) {
@@ -209,7 +217,7 @@ public class CampaignServiceImpl implements CampaignService {
     private com.fooddelivery.common.dto.targeting.TargetingSummary buildTargetingSummary(
             java.util.List<com.fooddelivery.ad.campaign.entity.AdGroup> adGroups) {
 
-        java.util.List<com.fooddelivery.common.dto.targeting.GeoTargeting.GeoLocation> locations = new java.util.ArrayList<>();
+        java.util.List<String> regions = new java.util.ArrayList<>();
         java.util.List<com.fooddelivery.common.dto.targeting.DaypartingConfig.Daypart> dayparts = new java.util.ArrayList<>();
         java.util.List<String> keywords = new java.util.ArrayList<>();
         java.util.List<String> blocklist = new java.util.ArrayList<>();
@@ -217,8 +225,8 @@ public class CampaignServiceImpl implements CampaignService {
         com.fooddelivery.common.dto.targeting.BehavioralTargeting behavioral = null;
 
         for (com.fooddelivery.ad.campaign.entity.AdGroup group : adGroups) {
-            if (group.getGeoTargeting() != null && group.getGeoTargeting().getLocations() != null) {
-                locations.addAll(group.getGeoTargeting().getLocations());
+            if (group.getGeoTargeting() != null && group.getGeoTargeting().getRegions() != null) {
+                regions.addAll(group.getGeoTargeting().getRegions());
             }
             if (group.getDaypartingConfig() != null && group.getDaypartingConfig().getDayparts() != null) {
                 dayparts.addAll(group.getDaypartingConfig().getDayparts());
@@ -241,8 +249,8 @@ public class CampaignServiceImpl implements CampaignService {
 
         com.fooddelivery.common.dto.targeting.TargetingSummary summary =
                 new com.fooddelivery.common.dto.targeting.TargetingSummary();
-        if (!locations.isEmpty()) {
-            summary.setGeoTargeting(new com.fooddelivery.common.dto.targeting.GeoTargeting(distinct(locations)));
+        if (!regions.isEmpty()) {
+            summary.setGeoTargeting(new com.fooddelivery.common.dto.targeting.GeoTargeting(distinct(regions)));
         }
         if (!dayparts.isEmpty()) {
             summary.setDaypartingConfig(new com.fooddelivery.common.dto.targeting.DaypartingConfig(distinct(dayparts)));
@@ -266,6 +274,7 @@ public class CampaignServiceImpl implements CampaignService {
         try {
             com.fooddelivery.common.dto.targeting.TargetingSummary targeting =
                     buildTargetingSummary(adGroupRepository.findByCampaignIdAndActiveTrue(campaign.getId()));
+            targeting.setFrequencyCap(campaign.getFrequencyCap());
 
             String creativeFormat = null;
             String creativeAssetUrl = null;
@@ -321,6 +330,7 @@ public class CampaignServiceImpl implements CampaignService {
         response.setMaxBid(campaign.getMaxBid());
         response.setStartDate(campaign.getStartDate());
         response.setEndDate(campaign.getEndDate());
+        response.setFrequencyCap(campaign.getFrequencyCap());
         response.setVersion(campaign.getVersion());
         return response;
     }

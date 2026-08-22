@@ -32,8 +32,8 @@ public class AdvertiserWalletBackfillRunner implements ApplicationRunner {
             for (String advertiserIdStr : advertiserIds) {
                 try {
                     UUID advertiserId = UUID.fromString(advertiserIdStr);
-                    // Calling GET /api/v1/wallets/{entityId}/{entityType} to proactively initialize the wallet
-                    walletServiceClient.getWallet(advertiserId, "ADVERTISER");
+                    // Calling GET /api/v1/wallets/{entityType}/{entityId} to proactively initialize the wallet
+                    walletServiceClient.getWallet("ADVERTISER", advertiserId);
                     count++;
                 } catch (Exception e) {
                     log.error("Failed to backfill wallet for advertiser {}", advertiserIdStr, e);

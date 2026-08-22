@@ -37,6 +37,8 @@ public class Campaign {
     private Instant startDate;
     @Column(name = "end_date")
     private Instant endDate;
+    @Column(name = "frequency_cap", nullable = false)
+    private Integer frequencyCap = 5;
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
@@ -94,6 +96,11 @@ public class Campaign {
     @java.lang.SuppressWarnings("all")
     public Instant getEndDate() {
         return this.endDate;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Integer getFrequencyCap() {
+        return this.frequencyCap;
     }
 
     @java.lang.SuppressWarnings("all")
@@ -157,6 +164,11 @@ public class Campaign {
     }
 
     @java.lang.SuppressWarnings("all")
+    public void setFrequencyCap(final Integer frequencyCap) {
+        this.frequencyCap = frequencyCap;
+    }
+
+    @java.lang.SuppressWarnings("all")
     public void setVersion(final Long version) {
         this.version = version;
     }
@@ -172,91 +184,15 @@ public class Campaign {
     }
 
     @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    public boolean equals(final java.lang.Object o) {
-        if (o == this) return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof Campaign)) return false;
-        final Campaign other = (Campaign) o;
-        if (!other.canEqual((java.lang.Object) this)) return false;
-        final java.lang.Object this$version = this.getVersion();
-        final java.lang.Object other$version = other.getVersion();
-        if (this$version == null ? other$version != null : !this$version.equals(other$version)) return false;
-        final java.lang.Object this$id = this.getId();
-        final java.lang.Object other$id = other.getId();
-        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
-        final java.lang.Object this$advertiserId = this.getAdvertiserId();
-        final java.lang.Object other$advertiserId = other.getAdvertiserId();
-        if (this$advertiserId == null ? other$advertiserId != null : !this$advertiserId.equals(other$advertiserId)) return false;
-        final java.lang.Object this$name = this.getName();
-        final java.lang.Object other$name = other.getName();
-        if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
-        final java.lang.Object this$status = this.getStatus();
-        final java.lang.Object other$status = other.getStatus();
-        if (this$status == null ? other$status != null : !this$status.equals(other$status)) return false;
-        final java.lang.Object this$dailyBudget = this.getDailyBudget();
-        final java.lang.Object other$dailyBudget = other.getDailyBudget();
-        if (this$dailyBudget == null ? other$dailyBudget != null : !this$dailyBudget.equals(other$dailyBudget)) return false;
-        final java.lang.Object this$lifetimeBudget = this.getLifetimeBudget();
-        final java.lang.Object other$lifetimeBudget = other.getLifetimeBudget();
-        if (this$lifetimeBudget == null ? other$lifetimeBudget != null : !this$lifetimeBudget.equals(other$lifetimeBudget)) return false;
-        final java.lang.Object this$maxBid = this.getMaxBid();
-        final java.lang.Object other$maxBid = other.getMaxBid();
-        if (this$maxBid == null ? other$maxBid != null : !this$maxBid.equals(other$maxBid)) return false;
-        final java.lang.Object this$startDate = this.getStartDate();
-        final java.lang.Object other$startDate = other.getStartDate();
-        if (this$startDate == null ? other$startDate != null : !this$startDate.equals(other$startDate)) return false;
-        final java.lang.Object this$endDate = this.getEndDate();
-        final java.lang.Object other$endDate = other.getEndDate();
-        if (this$endDate == null ? other$endDate != null : !this$endDate.equals(other$endDate)) return false;
-        final java.lang.Object this$createdAt = this.getCreatedAt();
-        final java.lang.Object other$createdAt = other.getCreatedAt();
-        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
-        final java.lang.Object this$updatedAt = this.getUpdatedAt();
-        final java.lang.Object other$updatedAt = other.getUpdatedAt();
-        if (this$updatedAt == null ? other$updatedAt != null : !this$updatedAt.equals(other$updatedAt)) return false;
-        return true;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    protected boolean canEqual(final java.lang.Object other) {
-        return other instanceof Campaign;
+        Campaign other = (Campaign) o;
+        return id != null && id.equals(other.getId());
     }
 
     @java.lang.Override
-    @java.lang.SuppressWarnings("all")
     public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final java.lang.Object $version = this.getVersion();
-        result = result * PRIME + ($version == null ? 43 : $version.hashCode());
-        final java.lang.Object $id = this.getId();
-        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
-        final java.lang.Object $advertiserId = this.getAdvertiserId();
-        result = result * PRIME + ($advertiserId == null ? 43 : $advertiserId.hashCode());
-        final java.lang.Object $name = this.getName();
-        result = result * PRIME + ($name == null ? 43 : $name.hashCode());
-        final java.lang.Object $status = this.getStatus();
-        result = result * PRIME + ($status == null ? 43 : $status.hashCode());
-        final java.lang.Object $dailyBudget = this.getDailyBudget();
-        result = result * PRIME + ($dailyBudget == null ? 43 : $dailyBudget.hashCode());
-        final java.lang.Object $lifetimeBudget = this.getLifetimeBudget();
-        result = result * PRIME + ($lifetimeBudget == null ? 43 : $lifetimeBudget.hashCode());
-        final java.lang.Object $maxBid = this.getMaxBid();
-        result = result * PRIME + ($maxBid == null ? 43 : $maxBid.hashCode());
-        final java.lang.Object $startDate = this.getStartDate();
-        result = result * PRIME + ($startDate == null ? 43 : $startDate.hashCode());
-        final java.lang.Object $endDate = this.getEndDate();
-        result = result * PRIME + ($endDate == null ? 43 : $endDate.hashCode());
-        final java.lang.Object $createdAt = this.getCreatedAt();
-        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
-        final java.lang.Object $updatedAt = this.getUpdatedAt();
-        result = result * PRIME + ($updatedAt == null ? 43 : $updatedAt.hashCode());
-        return result;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    public java.lang.String toString() {
-        return "Campaign(id=" + this.getId() + ", advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", status=" + this.getStatus() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", endDate=" + this.getEndDate() + ", version=" + this.getVersion() + ", createdAt=" + this.getCreatedAt() + ", updatedAt=" + this.getUpdatedAt() + ")";
+        return getClass().hashCode();
     }
 }

@@ -55,5 +55,22 @@ public class EnumValidationRunner implements CommandLineRunner {
             }
         }
         log.info("Postgres enum ad_format validated successfully.");
+
+        log.info("Validating creative_audit_status enum...");
+        List<String> creativeAuditStatusDbEnums = jdbcTemplate.queryForList(
+                "SELECT unnest(enum_range(NULL::creative_audit_status))::text",
+                String.class
+        );
+
+        List<String> creativeAuditStatusJavaEnums = Arrays.stream(com.fooddelivery.ad.campaign.enums.CreativeAuditStatus.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+
+        for (String javaEnum : creativeAuditStatusJavaEnums) {
+            if (!creativeAuditStatusDbEnums.contains(javaEnum)) {
+                throw new IllegalStateException("Postgres enum creative_audit_status is missing label: " + javaEnum);
+            }
+        }
+        log.info("Postgres enum creative_audit_status validated successfully.");
     }
 }

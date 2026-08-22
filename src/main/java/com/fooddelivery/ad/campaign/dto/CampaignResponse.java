@@ -15,6 +15,7 @@ public class CampaignResponse {
     private BigDecimal maxBid;
     private Instant startDate;
     private Instant endDate;
+    private Integer frequencyCap;
     private Long version;
 
     @java.lang.SuppressWarnings("all")
@@ -64,6 +65,11 @@ public class CampaignResponse {
     @java.lang.SuppressWarnings("all")
     public Instant getEndDate() {
         return this.endDate;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Integer getFrequencyCap() {
+        return this.frequencyCap;
     }
 
     @java.lang.SuppressWarnings("all")
@@ -117,6 +123,11 @@ public class CampaignResponse {
     }
 
     @java.lang.SuppressWarnings("all")
+    public void setFrequencyCap(final Integer frequencyCap) {
+        this.frequencyCap = frequencyCap;
+    }
+
+    @java.lang.SuppressWarnings("all")
     public void setVersion(final Long version) {
         this.version = version;
     }
@@ -158,6 +169,9 @@ public class CampaignResponse {
         final java.lang.Object this$endDate = this.getEndDate();
         final java.lang.Object other$endDate = other.getEndDate();
         if (this$endDate == null ? other$endDate != null : !this$endDate.equals(other$endDate)) return false;
+        final java.lang.Object this$frequencyCap = this.getFrequencyCap();
+        final java.lang.Object other$frequencyCap = other.getFrequencyCap();
+        if (this$frequencyCap == null ? other$frequencyCap != null : !this$frequencyCap.equals(other$frequencyCap)) return false;
         return true;
     }
 
@@ -171,8 +185,6 @@ public class CampaignResponse {
     public int hashCode() {
         final int PRIME = 59;
         int result = 1;
-        final java.lang.Object $version = this.getVersion();
-        result = result * PRIME + ($version == null ? 43 : $version.hashCode());
         final java.lang.Object $id = this.getId();
         result = result * PRIME + ($id == null ? 43 : $id.hashCode());
         final java.lang.Object $advertiserId = this.getAdvertiserId();
@@ -191,12 +203,16 @@ public class CampaignResponse {
         result = result * PRIME + ($startDate == null ? 43 : $startDate.hashCode());
         final java.lang.Object $endDate = this.getEndDate();
         result = result * PRIME + ($endDate == null ? 43 : $endDate.hashCode());
+        final java.lang.Object $frequencyCap = this.getFrequencyCap();
+        result = result * PRIME + ($frequencyCap == null ? 43 : $frequencyCap.hashCode());
+        final java.lang.Object $version = this.getVersion();
+        result = result * PRIME + ($version == null ? 43 : $version.hashCode());
         return result;
     }
 
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     public java.lang.String toString() {
-        return "CampaignResponse(id=" + this.getId() + ", advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", status=" + this.getStatus() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", endDate=" + this.getEndDate() + ", version=" + this.getVersion() + ")";
+        return "CampaignResponse(id=" + this.getId() + ", advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", status=" + this.getStatus() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", endDate=" + this.getEndDate() + ", frequencyCap=" + this.getFrequencyCap() + ", version=" + this.getVersion() + ")";
     }
 }

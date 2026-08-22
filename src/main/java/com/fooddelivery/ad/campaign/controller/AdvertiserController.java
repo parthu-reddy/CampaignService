@@ -24,7 +24,7 @@ public class AdvertiserController {
         this.s3PresignedUrlService = s3PresignedUrlService;
     }
 
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> register(
             @RequestHeader(value = "X-User-Id", required = true) String userId,
             @Validated @RequestBody AdvertiserRegistrationRequest request) {
@@ -44,6 +44,13 @@ public class AdvertiserController {
     public ResponseEntity<ApiResponse<AdvertiserResponse>> getMyAdvertiser(
             @RequestHeader(value = "X-User-Id", required = true) String userId) {
         AdvertiserResponse response = advertiserService.getAdvertiserByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Advertiser details fetched successfully"));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<AdvertiserResponse>> getAdvertiserByExternalRef(
+            @RequestParam(name = "externalRef") String externalRef) {
+        AdvertiserResponse response = advertiserService.getAdvertiserByExternalRef(externalRef);
         return ResponseEntity.ok(ApiResponse.success(response, "Advertiser details fetched successfully"));
     }
     

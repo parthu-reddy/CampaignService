@@ -107,61 +107,17 @@ public class AdvertiserProfile {
     }
 
     @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    public boolean equals(final java.lang.Object o) {
-        if (o == this) return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof AdvertiserProfile)) return false;
-        final AdvertiserProfile other = (AdvertiserProfile) o;
-        if (!other.canEqual((java.lang.Object) this)) return false;
-        final java.lang.Object this$id = this.getId();
-        final java.lang.Object other$id = other.getId();
-        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
-        final java.lang.Object this$userId = this.getUserId();
-        final java.lang.Object other$userId = other.getUserId();
-        if (this$userId == null ? other$userId != null : !this$userId.equals(other$userId)) return false;
-        final java.lang.Object this$companyName = this.getCompanyName();
-        final java.lang.Object other$companyName = other.getCompanyName();
-        if (this$companyName == null ? other$companyName != null : !this$companyName.equals(other$companyName)) return false;
-        final java.lang.Object this$walletBalanceId = this.getWalletBalanceId();
-        final java.lang.Object other$walletBalanceId = other.getWalletBalanceId();
-        if (this$walletBalanceId == null ? other$walletBalanceId != null : !this$walletBalanceId.equals(other$walletBalanceId)) return false;
-        final java.lang.Object this$createdAt = this.getCreatedAt();
-        final java.lang.Object other$createdAt = other.getCreatedAt();
-        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
-        final java.lang.Object this$updatedAt = this.getUpdatedAt();
-        final java.lang.Object other$updatedAt = other.getUpdatedAt();
-        if (this$updatedAt == null ? other$updatedAt != null : !this$updatedAt.equals(other$updatedAt)) return false;
-        return true;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    protected boolean canEqual(final java.lang.Object other) {
-        return other instanceof AdvertiserProfile;
+        AdvertiserProfile other = (AdvertiserProfile) o;
+        return id != null && id.equals(other.getId());
     }
 
     @java.lang.Override
-    @java.lang.SuppressWarnings("all")
     public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final java.lang.Object $id = this.getId();
-        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
-        final java.lang.Object $userId = this.getUserId();
-        result = result * PRIME + ($userId == null ? 43 : $userId.hashCode());
-        final java.lang.Object $companyName = this.getCompanyName();
-        result = result * PRIME + ($companyName == null ? 43 : $companyName.hashCode());
-        final java.lang.Object $walletBalanceId = this.getWalletBalanceId();
-        result = result * PRIME + ($walletBalanceId == null ? 43 : $walletBalanceId.hashCode());
-        final java.lang.Object $createdAt = this.getCreatedAt();
-        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
-        final java.lang.Object $updatedAt = this.getUpdatedAt();
-        result = result * PRIME + ($updatedAt == null ? 43 : $updatedAt.hashCode());
-        return result;
+        return getClass().hashCode();
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    public java.lang.String toString() {
-        return "AdvertiserProfile(id=" + this.getId() + ", userId=" + this.getUserId() + ", companyName=" + this.getCompanyName() + ", walletBalanceId=" + this.getWalletBalanceId() + ", createdAt=" + this.getCreatedAt() + ", updatedAt=" + this.getUpdatedAt() + ")";
-    }
+
 }

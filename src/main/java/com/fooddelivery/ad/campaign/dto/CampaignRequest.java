@@ -25,6 +25,8 @@ public class CampaignRequest {
     @NotNull
     private Instant startDate;
     private Instant endDate;
+    @PositiveOrZero
+    private Integer frequencyCap;
 
     @java.lang.SuppressWarnings("all")
     public CampaignRequest() {
@@ -66,6 +68,11 @@ public class CampaignRequest {
     }
 
     @java.lang.SuppressWarnings("all")
+    public Integer getFrequencyCap() {
+        return this.frequencyCap;
+    }
+
+    @java.lang.SuppressWarnings("all")
     public void setAdvertiserId(final UUID advertiserId) {
         this.advertiserId = advertiserId;
     }
@@ -100,6 +107,11 @@ public class CampaignRequest {
         this.endDate = endDate;
     }
 
+    @java.lang.SuppressWarnings("all")
+    public void setFrequencyCap(final Integer frequencyCap) {
+        this.frequencyCap = frequencyCap;
+    }
+
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     public boolean equals(final java.lang.Object o) {
@@ -128,6 +140,9 @@ public class CampaignRequest {
         final java.lang.Object this$endDate = this.getEndDate();
         final java.lang.Object other$endDate = other.getEndDate();
         if (this$endDate == null ? other$endDate != null : !this$endDate.equals(other$endDate)) return false;
+        final java.lang.Object this$frequencyCap = this.getFrequencyCap();
+        final java.lang.Object other$frequencyCap = other.getFrequencyCap();
+        if (this$frequencyCap == null ? other$frequencyCap != null : !this$frequencyCap.equals(other$frequencyCap)) return false;
         return true;
     }
 
@@ -155,12 +170,14 @@ public class CampaignRequest {
         result = result * PRIME + ($startDate == null ? 43 : $startDate.hashCode());
         final java.lang.Object $endDate = this.getEndDate();
         result = result * PRIME + ($endDate == null ? 43 : $endDate.hashCode());
+        final java.lang.Object $frequencyCap = this.getFrequencyCap();
+        result = result * PRIME + ($frequencyCap == null ? 43 : $frequencyCap.hashCode());
         return result;
     }
 
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     public java.lang.String toString() {
-        return "CampaignRequest(advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", endDate=" + this.getEndDate() + ")";
+        return "CampaignRequest(advertiserId=" + this.getAdvertiserId() + ", name=" + this.getName() + ", dailyBudget=" + this.getDailyBudget() + ", lifetimeBudget=" + this.getLifetimeBudget() + ", maxBid=" + this.getMaxBid() + ", startDate=" + this.getStartDate() + ", endDate=" + this.getEndDate() + ", frequencyCap=" + this.getFrequencyCap() + ")";
     }
 }

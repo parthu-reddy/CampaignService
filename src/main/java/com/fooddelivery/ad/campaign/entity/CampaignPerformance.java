@@ -143,75 +143,16 @@ public class CampaignPerformance {
     }
 
     @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    public boolean equals(final java.lang.Object o) {
-        if (o == this) return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof CampaignPerformance)) return false;
-        final CampaignPerformance other = (CampaignPerformance) o;
-        if (!other.canEqual((java.lang.Object) this)) return false;
-        if (this.getImpressions() != other.getImpressions()) return false;
-        if (this.getClicks() != other.getClicks()) return false;
-        if (this.getConversions() != other.getConversions()) return false;
-        final java.lang.Object this$id = this.getId();
-        final java.lang.Object other$id = other.getId();
-        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
-        final java.lang.Object this$campaignId = this.getCampaignId();
-        final java.lang.Object other$campaignId = other.getCampaignId();
-        if (this$campaignId == null ? other$campaignId != null : !this$campaignId.equals(other$campaignId)) return false;
-        final java.lang.Object this$advertiserId = this.getAdvertiserId();
-        final java.lang.Object other$advertiserId = other.getAdvertiserId();
-        if (this$advertiserId == null ? other$advertiserId != null : !this$advertiserId.equals(other$advertiserId)) return false;
-        final java.lang.Object this$date = this.getDate();
-        final java.lang.Object other$date = other.getDate();
-        if (this$date == null ? other$date != null : !this$date.equals(other$date)) return false;
-        final java.lang.Object this$spend = this.getSpend();
-        final java.lang.Object other$spend = other.getSpend();
-        if (this$spend == null ? other$spend != null : !this$spend.equals(other$spend)) return false;
-        final java.lang.Object this$createdAt = this.getCreatedAt();
-        final java.lang.Object other$createdAt = other.getCreatedAt();
-        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
-        final java.lang.Object this$updatedAt = this.getUpdatedAt();
-        final java.lang.Object other$updatedAt = other.getUpdatedAt();
-        if (this$updatedAt == null ? other$updatedAt != null : !this$updatedAt.equals(other$updatedAt)) return false;
-        return true;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    protected boolean canEqual(final java.lang.Object other) {
-        return other instanceof CampaignPerformance;
+        CampaignPerformance other = (CampaignPerformance) o;
+        return id != null && id.equals(other.getId());
     }
 
     @java.lang.Override
-    @java.lang.SuppressWarnings("all")
     public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final long $impressions = this.getImpressions();
-        result = result * PRIME + (int) ($impressions >>> 32 ^ $impressions);
-        final long $clicks = this.getClicks();
-        result = result * PRIME + (int) ($clicks >>> 32 ^ $clicks);
-        final long $conversions = this.getConversions();
-        result = result * PRIME + (int) ($conversions >>> 32 ^ $conversions);
-        final java.lang.Object $id = this.getId();
-        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
-        final java.lang.Object $campaignId = this.getCampaignId();
-        result = result * PRIME + ($campaignId == null ? 43 : $campaignId.hashCode());
-        final java.lang.Object $advertiserId = this.getAdvertiserId();
-        result = result * PRIME + ($advertiserId == null ? 43 : $advertiserId.hashCode());
-        final java.lang.Object $date = this.getDate();
-        result = result * PRIME + ($date == null ? 43 : $date.hashCode());
-        final java.lang.Object $spend = this.getSpend();
-        result = result * PRIME + ($spend == null ? 43 : $spend.hashCode());
-        final java.lang.Object $createdAt = this.getCreatedAt();
-        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
-        final java.lang.Object $updatedAt = this.getUpdatedAt();
-        result = result * PRIME + ($updatedAt == null ? 43 : $updatedAt.hashCode());
-        return result;
+        return getClass().hashCode();
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    public java.lang.String toString() {
-        return "CampaignPerformance(id=" + this.getId() + ", campaignId=" + this.getCampaignId() + ", advertiserId=" + this.getAdvertiserId() + ", date=" + this.getDate() + ", impressions=" + this.getImpressions() + ", clicks=" + this.getClicks() + ", conversions=" + this.getConversions() + ", spend=" + this.getSpend() + ", createdAt=" + this.getCreatedAt() + ", updatedAt=" + this.getUpdatedAt() + ")";
-    }
 }

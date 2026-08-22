@@ -19,10 +19,12 @@ public class AdvertiserService {
     
     private final AdvertiserProfileRepository advertiserRepository;
     private final WalletServiceClient walletClient;
+    private final String defaultCurrency;
 
-    public AdvertiserService(AdvertiserProfileRepository advertiserRepository, WalletServiceClient walletClient) {
+    public AdvertiserService(AdvertiserProfileRepository advertiserRepository, WalletServiceClient walletClient, @org.springframework.beans.factory.annotation.Value("${platform.default-currency:INR}") String defaultCurrency) {
         this.advertiserRepository = advertiserRepository;
         this.walletClient = walletClient;
+        this.defaultCurrency = defaultCurrency;
     }
 
     @Transactional
@@ -47,7 +49,7 @@ public class AdvertiserService {
             CreateWalletRequest createWalletReq = new CreateWalletRequest();
             createWalletReq.setEntityId(profile.getId());
             createWalletReq.setEntityType(CreateWalletRequest.EntityTypeEnum.ADVERTISER);
-            createWalletReq.setCurrency("INR");
+            createWalletReq.setCurrency(defaultCurrency);
             WalletDto wallet = walletClient.createWallet(createWalletReq);
             profile.setWalletBalanceId(wallet.getId());
             profile = advertiserRepository.save(profile);
@@ -71,6 +73,13 @@ public class AdvertiserService {
         return advertiserRepository.findByUserId(userId)
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Advertiser not found for user"));
+    }
+
+    @Transactional(readOnly = true)
+    public AdvertiserResponse getAdvertiserByExternalRef(String externalRef) {
+        return advertiserRepository.findByExternalRef(externalRef)
+                .map(this::mapToResponse)
+                .orElseThrow(() -> new IllegalArgumentException("Advertiser not found for external reference"));
     }
 
     private AdvertiserResponse mapToResponse(AdvertiserProfile profile) {
