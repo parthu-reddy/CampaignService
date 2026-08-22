@@ -24,6 +24,12 @@ public class ContractTestBase {
     @BeforeEach
     public void setup() {
         CampaignRepository campaignRepository = Mockito.mock(CampaignRepository.class);
+        // getActiveCampaignsForBidding builds a TargetingSummary from this; the batch/budgets
+        // contract never reaches that path, but the controller requires the collaborator.
+        com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository =
+                Mockito.mock(com.fooddelivery.ad.campaign.repository.AdGroupRepository.class);
+        Mockito.when(adGroupRepository.findByCampaignIdAndActiveTrue(Mockito.any()))
+               .thenReturn(java.util.List.of());
 
         Campaign cmp1 = new Campaign();
         cmp1.setId(CAMPAIGN_ONE);
@@ -40,6 +46,6 @@ public class ContractTestBase {
         Mockito.when(campaignRepository.findAllById(Mockito.anyIterable()))
                .thenReturn(List.of(cmp1, cmp2));
 
-        RestAssuredMockMvc.standaloneSetup(new InternalCampaignController(campaignRepository));
+        RestAssuredMockMvc.standaloneSetup(new InternalCampaignController(campaignRepository, adGroupRepository));
     }
 }
