@@ -14,10 +14,6 @@ import java.util.UUID;
 
 /**
  * Base class for the generated HTTP contract tests under {@code contracts/http}.
- *
- * <p>{@link InternalCampaignController#getDailyBudgets} looks up campaigns with
- * {@code findAllById(ids)} — not {@code findById} — so the stubs below
- * must match that call shape or the controller sees an empty result and returns {}.
  */
 @org.springframework.test.context.ActiveProfiles("contract-test")
 public class ContractTestBase {

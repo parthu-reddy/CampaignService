@@ -15,9 +15,11 @@ import java.util.UUID;
 public class InternalCampaignController {
 
     private final CampaignRepository campaignRepository;
+    private final com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository;
 
-    public InternalCampaignController(CampaignRepository campaignRepository) {
+    public InternalCampaignController(CampaignRepository campaignRepository, com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository) {
         this.campaignRepository = campaignRepository;
+        this.adGroupRepository = adGroupRepository;
     }
 
     @PostMapping("/batch/budgets")
@@ -60,9 +62,70 @@ public class InternalCampaignController {
             map.put("id", c.getId().toString());
             map.put("advertiserId", c.getAdvertiserId().toString());
             map.put("maxBid", c.getMaxBid());
+            
+            com.fooddelivery.common.dto.targeting.TargetingSummary targeting = buildTargetingSummary(
+                adGroupRepository.findByCampaignIdAndActiveTrue(c.getId()));
+            if (targeting != null) {
+                map.put("targeting", targeting);
+            }
+            
             return map;
         }).collect(java.util.stream.Collectors.toList());
         
         return ResponseEntity.ok(response);
+    }
+
+    private com.fooddelivery.common.dto.targeting.TargetingSummary buildTargetingSummary(
+            java.util.List<com.fooddelivery.ad.campaign.entity.AdGroup> adGroups) {
+
+        java.util.List<String> regions = new java.util.ArrayList<>();
+        java.util.List<com.fooddelivery.common.dto.targeting.DaypartingConfig.Daypart> dayparts = new java.util.ArrayList<>();
+        java.util.List<String> keywords = new java.util.ArrayList<>();
+        java.util.List<String> blocklist = new java.util.ArrayList<>();
+        com.fooddelivery.common.dto.targeting.DemographicTargeting demographics = null;
+        com.fooddelivery.common.dto.targeting.BehavioralTargeting behavioral = null;
+
+        for (com.fooddelivery.ad.campaign.entity.AdGroup group : adGroups) {
+            if (group.getGeoTargeting() != null && group.getGeoTargeting().getRegions() != null) {
+                regions.addAll(group.getGeoTargeting().getRegions());
+            }
+            if (group.getDaypartingConfig() != null && group.getDaypartingConfig().getDayparts() != null) {
+                dayparts.addAll(group.getDaypartingConfig().getDayparts());
+            }
+            if (group.getContextualKeywords() != null && group.getContextualKeywords().getKeywords() != null) {
+                keywords.addAll(group.getContextualKeywords().getKeywords());
+            }
+            if (group.getBrandSafetyBlocklist() != null) {
+                blocklist.addAll(group.getBrandSafetyBlocklist());
+            }
+            if (demographics == null) {
+                demographics = group.getDemographicTargeting();
+            }
+            if (behavioral == null) {
+                behavioral = group.getBehavioralTargeting();
+            }
+        }
+
+        com.fooddelivery.common.dto.targeting.TargetingSummary summary =
+                new com.fooddelivery.common.dto.targeting.TargetingSummary();
+        if (!regions.isEmpty()) {
+            summary.setGeoTargeting(new com.fooddelivery.common.dto.targeting.GeoTargeting(distinct(regions)));
+        }
+        if (!dayparts.isEmpty()) {
+            summary.setDaypartingConfig(new com.fooddelivery.common.dto.targeting.DaypartingConfig(distinct(dayparts)));
+        }
+        if (!keywords.isEmpty()) {
+            summary.setContextualKeywords(new com.fooddelivery.common.dto.targeting.ContextualKeywords(distinct(keywords)));
+        }
+        if (!blocklist.isEmpty()) {
+            summary.setBrandSafetyBlocklist(distinct(blocklist));
+        }
+        summary.setDemographicTargeting(demographics);
+        summary.setBehavioralTargeting(behavioral);
+        return summary;
+    }
+
+    private static <T> java.util.List<T> distinct(java.util.List<T> values) {
+        return values.stream().distinct().collect(java.util.stream.Collectors.toList());
     }
 }

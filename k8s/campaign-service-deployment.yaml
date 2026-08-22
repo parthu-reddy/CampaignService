@@ -14,32 +14,41 @@ spec:
         app: campaign-service
     spec:
       containers:
-        - name: campaign-service
-          image: food-delivery/campaign-service:latest
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8088
-          envFrom:
-            - configMapRef:
-                name: advertisement-config
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "prod"
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8088
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8088
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-          securityContext:
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
+      - env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        envFrom:
+        - configMapRef:
+            name: advertisement-config
+        image: food-delivery/campaign-service:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8088
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        name: campaign-service
+        ports:
+        - containerPort: 8088
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8088
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
