@@ -31,8 +31,6 @@ public class AdGroupService {
         adGroup.setName(request.getName());
         adGroup.setGeoTargeting(request.getGeoTargeting());
         adGroup.setDaypartingConfig(request.getDaypartingConfig());
-        adGroup.setDemographicTargeting(request.getDemographicTargeting());
-        adGroup.setBehavioralTargeting(request.getBehavioralTargeting());
         adGroup.setContextualKeywords(request.getContextualKeywords());
         adGroup.setBrandSafetyBlocklist(request.getBrandSafetyBlocklist());
         adGroup.setActive(request.isActive());
@@ -64,8 +62,6 @@ public class AdGroupService {
         adGroup.setName(request.getName());
         adGroup.setGeoTargeting(request.getGeoTargeting());
         adGroup.setDaypartingConfig(request.getDaypartingConfig());
-        adGroup.setDemographicTargeting(request.getDemographicTargeting());
-        adGroup.setBehavioralTargeting(request.getBehavioralTargeting());
         adGroup.setContextualKeywords(request.getContextualKeywords());
         adGroup.setBrandSafetyBlocklist(request.getBrandSafetyBlocklist());
         adGroup.setActive(request.isActive());
@@ -88,8 +84,6 @@ public class AdGroupService {
             entity.getName(),
             entity.getGeoTargeting(),
             entity.getDaypartingConfig(),
-            entity.getDemographicTargeting(),
-            entity.getBehavioralTargeting(),
             entity.getContextualKeywords(),
             entity.getBrandSafetyBlocklist(),
             entity.isActive(),

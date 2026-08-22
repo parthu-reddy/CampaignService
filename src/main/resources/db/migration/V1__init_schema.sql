@@ -42,9 +42,7 @@ CREATE TABLE ad_groups (
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    behavioral_targeting JSONB,
     contextual_keywords JSONB,
-    demographic_targeting JSONB,
     brand_safety_blocklist JSONB
 );
 
@@ -73,11 +71,29 @@ CREATE TABLE campaign_performance (
     CONSTRAINT uq_campaign_performance_campaign_date UNIQUE (campaign_id, date)
 );
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE INDEX idx_campaign_performance_campaign_id ON campaign_performance(campaign_id);
+
 CREATE INDEX idx_campaign_performance_advertiser_id ON campaign_performance(advertiser_id);
 
 CREATE INDEX idx_campaigns_advertiser_id ON campaigns (advertiser_id);
+
 CREATE INDEX idx_campaigns_status        ON campaigns (status);
+
 CREATE INDEX idx_campaigns_status_dates  ON campaigns (status, start_date, end_date);
 
 CREATE INDEX idx_ad_groups_campaign_id   ON ad_groups (campaign_id);
@@ -85,4 +101,5 @@ CREATE INDEX idx_ad_groups_campaign_id   ON ad_groups (campaign_id);
 CREATE INDEX idx_ad_creatives_group_id   ON ad_creatives (ad_group_id);
 
 CREATE INDEX idx_perf_campaign_date      ON campaign_performance (campaign_id, date DESC);
+
 CREATE INDEX idx_perf_advertiser_date    ON campaign_performance (advertiser_id, date DESC);

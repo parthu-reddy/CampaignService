@@ -40,13 +40,6 @@ public class AdGroup {
     @Column(name = "dayparting_config", columnDefinition = "jsonb")
     private DaypartingConfig daypartingConfig;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "demographic_targeting", columnDefinition = "jsonb")
-    private DemographicTargeting demographicTargeting;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "behavioral_targeting", columnDefinition = "jsonb")
-    private BehavioralTargeting behavioralTargeting;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "contextual_keywords", columnDefinition = "jsonb")

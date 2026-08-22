@@ -221,8 +221,6 @@ public class CampaignServiceImpl implements CampaignService {
         java.util.List<com.fooddelivery.common.dto.targeting.DaypartingConfig.Daypart> dayparts = new java.util.ArrayList<>();
         java.util.List<String> keywords = new java.util.ArrayList<>();
         java.util.List<String> blocklist = new java.util.ArrayList<>();
-        com.fooddelivery.common.dto.targeting.DemographicTargeting demographics = null;
-        com.fooddelivery.common.dto.targeting.BehavioralTargeting behavioral = null;
 
         for (com.fooddelivery.ad.campaign.entity.AdGroup group : adGroups) {
             if (group.getGeoTargeting() != null && group.getGeoTargeting().getRegions() != null) {
@@ -236,14 +234,6 @@ public class CampaignServiceImpl implements CampaignService {
             }
             if (group.getBrandSafetyBlocklist() != null) {
                 blocklist.addAll(group.getBrandSafetyBlocklist());
-            }
-            // Demographic and behavioural targeting are not list-mergeable; the first group that
-            // declares them wins, which matches how a single-ad-group campaign behaves today.
-            if (demographics == null) {
-                demographics = group.getDemographicTargeting();
-            }
-            if (behavioral == null) {
-                behavioral = group.getBehavioralTargeting();
             }
         }
 
@@ -261,8 +251,6 @@ public class CampaignServiceImpl implements CampaignService {
         if (!blocklist.isEmpty()) {
             summary.setBrandSafetyBlocklist(distinct(blocklist));
         }
-        summary.setDemographicTargeting(demographics);
-        summary.setBehavioralTargeting(behavioral);
         return summary;
     }
 

@@ -21,11 +21,6 @@ public class AdGroupRequest {
     @Valid
     private DaypartingConfig daypartingConfig;
 
-    @Valid
-    private DemographicTargeting demographicTargeting;
-
-    @Valid
-    private BehavioralTargeting behavioralTargeting;
 
     @Valid
     private ContextualKeywords contextualKeywords;
