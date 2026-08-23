@@ -41,7 +41,7 @@ public class KafkaAnalyticsConsumer {
     }
 
     @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR)
-    @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id:campaign-service-group}")
+    @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id:campaign-service-group}-kafkaanalyticsconsumer")
     @Transactional
     @io.micrometer.observation.annotation.Observed(name = "analytics.consume", contextualName = "analytics-consumer")
     public void consumeTrackingEvent(String message, @org.springframework.messaging.handler.annotation.Headers java.util.Map<String, Object> headers) {

@@ -37,7 +37,9 @@ public class CampaignLifecycleScheduler {
 
     @Scheduled(fixedDelayString = "${campaign.lifecycle.interval.ms:60000}")
     public void sweepCampaigns() {
-        Boolean acquired = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "locked", Duration.ofSeconds(30));
+        com.fooddelivery.common.lock.RedisLock _redisLock = new com.fooddelivery.common.lock.RedisLock(redisTemplate);
+        String _lockToken = java.util.UUID.randomUUID().toString();
+        boolean acquired = _redisLock.tryAcquire(LOCK_KEY, _lockToken, Duration.ofSeconds(30));
         if (Boolean.TRUE.equals(acquired)) {
             try {
                 java.time.Instant now = java.time.Instant.now(clock);

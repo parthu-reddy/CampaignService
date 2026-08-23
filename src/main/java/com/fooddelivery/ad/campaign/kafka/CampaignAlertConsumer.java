@@ -37,7 +37,7 @@ public class CampaignAlertConsumer {
 
     @Transactional
     @RetryableTopic(attempts = "5")
-    @KafkaListener(topics = KafkaConstants.TOPIC_AD_EVENTS, groupId = "campaign-alert-consumer-group")
+    @KafkaListener(topics = KafkaConstants.TOPIC_AD_EVENTS, groupId = "campaign-alert-consumer-group-campaignalertconsumer")
     public void consumeAdEvent(String message, @Headers Map<String, Object> headers) throws Exception {
         JsonNode root = objectMapper.readTree(message);
         String eventTypeStr = EventPayloadUtils.resolveEventType(root, headers);
