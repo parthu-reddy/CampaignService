@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: ""
   kafka:
     consumer:
       group-id: contract-test-verifier
