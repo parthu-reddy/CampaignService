@@ -17,7 +17,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaAuditing
 @EnableScheduling
 @EnableFeignClients(basePackages = "com.fooddelivery.ad.campaign.client")
-@com.fooddelivery.common.outbox.config.EnableOutbox
 public class CampaignServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(CampaignServiceApplication.class, args);
