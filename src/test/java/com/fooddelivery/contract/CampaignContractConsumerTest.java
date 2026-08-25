@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 }, stubsMode = StubRunnerProperties.StubsMode.LOCAL)
 public class CampaignContractConsumerTest {
 
-    @Configuration
-    @EnableAutoConfiguration(exclude = {
+    @org.springframework.boot.SpringBootConfiguration
+    @org.springframework.boot.autoconfigure.EnableAutoConfiguration(exclude = {
             DataSourceAutoConfiguration.class,
             DataSourceTransactionManagerAutoConfiguration.class,
             HibernateJpaAutoConfiguration.class
