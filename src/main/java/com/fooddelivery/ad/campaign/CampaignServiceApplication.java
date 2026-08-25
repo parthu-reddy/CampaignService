@@ -12,8 +12,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(
     scanBasePackages = {"com.fooddelivery.ad.campaign", "com.fooddelivery.common"}
 )
-@org.springframework.boot.autoconfigure.domain.EntityScan(basePackages = {"com.fooddelivery.ad.campaign", "com.fooddelivery.common.entity"})
-@org.springframework.data.jpa.repository.config.EnableJpaRepositories(basePackages = {"com.fooddelivery.ad.campaign", "com.fooddelivery.common.repository"})
+@org.springframework.boot.autoconfigure.domain.EntityScan(basePackages = {"com.fooddelivery.ad.campaign", "com.fooddelivery.common"})
+@org.springframework.data.jpa.repository.config.EnableJpaRepositories(basePackages = {"com.fooddelivery.ad.campaign", "com.fooddelivery.common"})
 @EnableJpaAuditing
 @EnableScheduling
 @EnableFeignClients(basePackages = "com.fooddelivery.ad.campaign.client")
