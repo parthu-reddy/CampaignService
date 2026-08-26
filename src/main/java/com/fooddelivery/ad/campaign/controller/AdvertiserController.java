@@ -26,7 +26,7 @@ public class AdvertiserController {
 
     @PostMapping("")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> register(
-            @RequestHeader(value = "X-User-Id", required = true) String userId,
+            @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = true) String userId,
             @Validated @RequestBody AdvertiserRegistrationRequest request) {
         
         AdvertiserResponse response = advertiserService.registerAdvertiser(userId, request);
@@ -42,7 +42,7 @@ public class AdvertiserController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> getMyAdvertiser(
-            @RequestHeader(value = "X-User-Id", required = true) String userId) {
+            @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = true) String userId) {
         AdvertiserResponse response = advertiserService.getAdvertiserByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "Advertiser details fetched successfully"));
     }
