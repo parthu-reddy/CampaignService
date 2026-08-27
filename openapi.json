@@ -1202,6 +1202,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/CampaignResponse"
           },
@@ -1388,6 +1391,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/AdGroupResponse"
           },
@@ -1405,6 +1411,9 @@
             "type" : "boolean"
           },
           "message" : {
+            "type" : "string"
+          },
+          "errorCode" : {
             "type" : "string"
           },
           "data" : {
@@ -1485,6 +1494,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/AdvertiserResponse"
           },
@@ -1555,6 +1567,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/AdCreativeResponse"
           },
@@ -1572,6 +1587,9 @@
             "type" : "boolean"
           },
           "message" : {
+            "type" : "string"
+          },
+          "errorCode" : {
             "type" : "string"
           },
           "data" : {
@@ -1603,6 +1621,9 @@
             "type" : "boolean"
           },
           "message" : {
+            "type" : "string"
+          },
+          "errorCode" : {
             "type" : "string"
           },
           "data" : {
@@ -1648,6 +1669,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/PageCampaignResponse"
           },
@@ -1668,10 +1692,6 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "number" : {
             "type" : "integer",
             "format" : "int32"
@@ -1691,6 +1711,10 @@
           },
           "last" : {
             "type" : "boolean"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
           },
           "sort" : {
             "type" : "array",
@@ -1765,6 +1789,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/PageCampaignPerformanceResponse"
           },
@@ -1821,10 +1848,6 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "number" : {
             "type" : "integer",
             "format" : "int32"
@@ -1844,6 +1867,10 @@
           },
           "last" : {
             "type" : "boolean"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
           },
           "sort" : {
             "type" : "array",
@@ -1869,6 +1896,9 @@
           "message" : {
             "type" : "string"
           },
+          "errorCode" : {
+            "type" : "string"
+          },
           "data" : {
             "$ref" : "#/components/schemas/PageAdGroupResponse"
           },
@@ -1889,10 +1919,6 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "number" : {
             "type" : "integer",
             "format" : "int32"
@@ -1912,6 +1938,10 @@
           },
           "last" : {
             "type" : "boolean"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
           },
           "sort" : {
             "type" : "array",
@@ -1935,6 +1965,9 @@
             "type" : "boolean"
           },
           "message" : {
+            "type" : "string"
+          },
+          "errorCode" : {
             "type" : "string"
           },
           "data" : {

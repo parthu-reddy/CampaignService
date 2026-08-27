@@ -48,7 +48,7 @@ public class AdvertiserService {
         try {
             CreateWalletRequest createWalletReq = new CreateWalletRequest();
             createWalletReq.setEntityId(profile.getId());
-            createWalletReq.setEntityType(CreateWalletRequest.EntityTypeEnum.ADVERTISER);
+            createWalletReq.setEntityType(com.fooddelivery.common.enums.EntityType.ADVERTISER);
             createWalletReq.setCurrency(defaultCurrency);
             WalletDto wallet = walletClient.createWallet(createWalletReq);
             profile.setWalletBalanceId(wallet.getId());
