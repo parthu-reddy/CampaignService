@@ -12,12 +12,19 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdCreativeResponse {
+    @jakarta.validation.constraints.NotNull
     private UUID id;
+    @jakarta.validation.constraints.NotNull
     private UUID adGroupId;
+    @jakarta.validation.constraints.NotNull
     private AdFormat format;
+    @jakarta.validation.constraints.NotNull
     private String assetUrl;
     private String vastXml;
+    @jakarta.validation.constraints.NotNull
     private CreativeAuditStatus auditStatus;
+    @jakarta.validation.constraints.NotNull
     private Instant createdAt;
+    @jakarta.validation.constraints.NotNull
     private Instant updatedAt;
 }

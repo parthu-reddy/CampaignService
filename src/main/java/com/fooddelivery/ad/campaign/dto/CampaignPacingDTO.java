@@ -5,6 +5,7 @@ import java.util.UUID;
 public class CampaignPacingDTO {
     private Double dailyBudget;
     private Double lifetimeBudget;
+    @jakarta.validation.constraints.NotNull
     private UUID advertiserId;
 
     public CampaignPacingDTO() {}

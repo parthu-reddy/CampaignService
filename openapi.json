@@ -1215,6 +1215,7 @@
         }
       },
       "CampaignResponse" : {
+        "required" : [ "advertiserId", "dailyBudget", "frequencyCap", "id", "lifetimeBudget", "maxBid", "name", "startDate", "status", "version" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1287,6 +1288,7 @@
         }
       },
       "ContextualKeywords" : {
+        "required" : [ "keywords" ],
         "type" : "object",
         "properties" : {
           "keywords" : {
@@ -1300,6 +1302,7 @@
         }
       },
       "Daypart" : {
+        "required" : [ "dayOfWeek", "endTime", "startTime" ],
         "type" : "object",
         "properties" : {
           "dayOfWeek" : {
@@ -1314,6 +1317,7 @@
         }
       },
       "DaypartingConfig" : {
+        "required" : [ "dayparts" ],
         "type" : "object",
         "properties" : {
           "dayparts" : {
@@ -1327,6 +1331,7 @@
         }
       },
       "GeoTargeting" : {
+        "required" : [ "regions" ],
         "type" : "object",
         "properties" : {
           "regions" : {
@@ -1340,6 +1345,7 @@
         }
       },
       "AdGroupResponse" : {
+        "required" : [ "active", "campaignId", "createdAt", "id", "name", "updatedAt" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1426,6 +1432,7 @@
         }
       },
       "CampaignPacingDTO" : {
+        "required" : [ "advertiserId" ],
         "type" : "object",
         "properties" : {
           "dailyBudget" : {
@@ -1455,6 +1462,7 @@
         }
       },
       "AdvertiserResponse" : {
+        "required" : [ "companyName", "createdAt", "id", "updatedAt", "userId" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1523,6 +1531,7 @@
         }
       },
       "AdCreativeResponse" : {
+        "required" : [ "adGroupId", "assetUrl", "auditStatus", "createdAt", "format", "id", "updatedAt" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1682,6 +1691,7 @@
         }
       },
       "PageCampaignResponse" : {
+        "required" : [ "content", "empty", "first", "last", "number", "numberOfElements", "size", "totalElements", "totalPages" ],
         "type" : "object",
         "properties" : {
           "totalPages" : {
@@ -1691,6 +1701,19 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "sort" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SortObject"
+            }
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "number" : {
             "type" : "integer",
@@ -1712,36 +1735,23 @@
           "last" : {
             "type" : "boolean"
           },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "sort" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SortObject"
-            }
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "empty" : {
             "type" : "boolean"
           }
         }
       },
       "PageableObject" : {
+        "required" : [ "offset", "pageNumber", "pageSize", "paged", "unpaged" ],
         "type" : "object",
         "properties" : {
-          "offset" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "sort" : {
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/SortObject"
             }
+          },
+          "unpaged" : {
+            "type" : "boolean"
           },
           "paged" : {
             "type" : "boolean"
@@ -1754,8 +1764,9 @@
             "type" : "integer",
             "format" : "int32"
           },
-          "unpaged" : {
-            "type" : "boolean"
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -1802,6 +1813,7 @@
         }
       },
       "CampaignPerformanceResponse" : {
+        "required" : [ "advertiserId", "campaignId", "date", "id", "spend" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1838,6 +1850,7 @@
         }
       },
       "PageCampaignPerformanceResponse" : {
+        "required" : [ "content", "empty", "first", "last", "number", "numberOfElements", "size", "totalElements", "totalPages" ],
         "type" : "object",
         "properties" : {
           "totalPages" : {
@@ -1847,6 +1860,19 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "sort" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SortObject"
+            }
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "number" : {
             "type" : "integer",
@@ -1867,19 +1893,6 @@
           },
           "last" : {
             "type" : "boolean"
-          },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "sort" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SortObject"
-            }
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -1909,6 +1922,7 @@
         }
       },
       "PageAdGroupResponse" : {
+        "required" : [ "content", "empty", "first", "last", "number", "numberOfElements", "size", "totalElements", "totalPages" ],
         "type" : "object",
         "properties" : {
           "totalPages" : {
@@ -1918,6 +1932,19 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "sort" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SortObject"
+            }
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "number" : {
             "type" : "integer",
@@ -1938,19 +1965,6 @@
           },
           "last" : {
             "type" : "boolean"
-          },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "sort" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SortObject"
-            }
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
