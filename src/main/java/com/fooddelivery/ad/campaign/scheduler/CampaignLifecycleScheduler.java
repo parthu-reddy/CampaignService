@@ -19,6 +19,13 @@ import java.time.Duration;
 // The contract-test profile excludes Redis autoconfiguration, and a scheduler has nothing to do
 // in a contract test. Mirrors IdempotencyFilter and RateLimitingService.RateLimitConfig.
 @org.springframework.context.annotation.Profile("!contract-test")
+/**
+ * <strong>@replication-safe: distributed-lock</strong> -- holds a Redis SET NX lock for the duration of the sweep.
+ *
+ * <p>Classification recorded 2026-08-27 (Phase 7). Every @Scheduled class in this workspace
+ * carries one of these markers; the BOOT-SCHEDULE-CLASSIFIED check fails on a new one that
+ * does not. Change the marker only after re-reading what the job actually does.
+ */
 public class CampaignLifecycleScheduler {
 
     private final CampaignRepository campaignRepository;

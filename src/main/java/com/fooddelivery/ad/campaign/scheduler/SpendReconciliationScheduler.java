@@ -30,6 +30,13 @@ import java.util.Map;
 // The contract-test profile excludes Redis autoconfiguration, and a scheduler has nothing to
 // do in a contract test. Mirrors CampaignLifecycleScheduler.
 @org.springframework.context.annotation.Profile("!contract-test")
+/**
+ * <strong>@replication-safe: idempotent</strong> -- reads and emits metrics only -- it never writes a correction, so concurrent runs cannot diverge.
+ *
+ * <p>Classification recorded 2026-08-27 (Phase 7). Every @Scheduled class in this workspace
+ * carries one of these markers; the BOOT-SCHEDULE-CLASSIFIED check fails on a new one that
+ * does not. Change the marker only after re-reading what the job actually does.
+ */
 public class SpendReconciliationScheduler {
 
     /** UserTrackingService stores spend as ten-thousandths, matching DECIMAL(19,4). */
