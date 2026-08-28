@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ActiveProfiles("contract-test")
 @SpringBootTest(classes = CampaignContractConsumerTest.TestConfig.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @AutoConfigureStubRunner(ids = {
-    "com.fooddelivery:wallet-service:+:stubs:8099"
+    "com.fooddelivery:wallet-service:+:stubs"
 }, stubsMode = StubRunnerProperties.StubsMode.LOCAL)
 public class CampaignContractConsumerTest {
 

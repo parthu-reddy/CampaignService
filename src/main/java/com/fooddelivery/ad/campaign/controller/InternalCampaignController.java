@@ -12,6 +12,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/internal/campaigns")
 @lombok.extern.slf4j.Slf4j
+/*
+ * Every caller is background work -- BiddingEngine's IndexReconciliationScheduler and
+ * IndexBootstrapService, and BudgetLimitingService's PacingEngineService -- so these can require
+ * SERVICE. That became expressible only once FeignSecurityInterceptor started minting a signed
+ * SERVICE identity for calls with no principal; before it, any annotation here would have 403'd ad
+ * index reconciliation.
+ */
 public class InternalCampaignController {
 
     private final CampaignRepository campaignRepository;
@@ -22,6 +29,7 @@ public class InternalCampaignController {
         this.adGroupRepository = adGroupRepository;
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('SERVICE', 'ADMIN')")
     @PostMapping("/batch/budgets")
     public ResponseEntity<Map<String, CampaignPacingDTO>> getDailyBudgets(@RequestBody List<String> campaignIds) {
         Map<String, CampaignPacingDTO> budgets = new HashMap<>();
@@ -49,6 +57,7 @@ public class InternalCampaignController {
         return ResponseEntity.ok(budgets);
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('SERVICE', 'ADMIN')")
     @GetMapping("/active-for-bidding")
     public ResponseEntity<List<Map<String, Object>>> getActiveCampaignsForBidding() {
         // In a real implementation this would fetch ACTIVE campaigns from repository

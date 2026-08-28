@@ -18,12 +18,16 @@ public class AdvertiserController {
 
     private final AdvertiserService advertiserService;
     private final com.fooddelivery.ad.campaign.service.S3PresignedUrlService s3PresignedUrlService;
+    private final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper;
 
-    public AdvertiserController(AdvertiserService advertiserService, com.fooddelivery.ad.campaign.service.S3PresignedUrlService s3PresignedUrlService) {
+    public AdvertiserController(AdvertiserService advertiserService, com.fooddelivery.ad.campaign.service.S3PresignedUrlService s3PresignedUrlService,
+                               com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper) {
+        this.campaignSecurityHelper = campaignSecurityHelper;
         this.advertiserService = advertiserService;
         this.s3PresignedUrlService = s3PresignedUrlService;
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PostMapping("")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> register(
             @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = true) String userId,
@@ -33,13 +37,18 @@ public class AdvertiserController {
         return new ResponseEntity<>(ApiResponse.success(response, "Advertiser registered successfully"), HttpStatus.CREATED);
     }
 
+    /** Reads one advertiser by id; previously any authenticated user could read any advertiser. */
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> getAdvertiser(
-            @PathVariable UUID id) {
+            @PathVariable UUID id,
+            @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId) {
+        campaignSecurityHelper.verifyAccess(userId, id);
         AdvertiserResponse response = advertiserService.getAdvertiser(id);
         return ResponseEntity.ok(ApiResponse.success(response, "Advertiser details fetched successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> getMyAdvertiser(
             @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = true) String userId) {
@@ -47,6 +56,12 @@ public class AdvertiserController {
         return ResponseEntity.ok(ApiResponse.success(response, "Advertiser details fetched successfully"));
     }
 
+    /**
+     * Resolves an advertiser from an external reference. Ownership cannot be verified before the
+     * lookup itself resolves an id, so this requires a principal but does not scope the result --
+     * a known gap, recorded in FOLLOW_UPS item 13a rather than papered over.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("")
     public ResponseEntity<ApiResponse<AdvertiserResponse>> getAdvertiserByExternalRef(
             @RequestParam(name = "externalRef") String externalRef) {
@@ -54,11 +69,15 @@ public class AdvertiserController {
         return ResponseEntity.ok(ApiResponse.success(response, "Advertiser details fetched successfully"));
     }
     
+    /** Issues an upload URL for one advertiser's assets, so ownership must be proven. */
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("/{advertiserId}/presigned-url")
     public ResponseEntity<ApiResponse<String>> getPresignedUrlForUpload(
             @PathVariable UUID advertiserId, 
             @RequestParam String fileName,
-            @RequestParam String contentType) {
+            @RequestParam String contentType,
+            @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId) {
+        campaignSecurityHelper.verifyAccess(userId, advertiserId);
         String url = s3PresignedUrlService.generatePresignedUrl(advertiserId, fileName, contentType);
         return ResponseEntity.ok(ApiResponse.success(url, "Presigned URL generated successfully"));
     }

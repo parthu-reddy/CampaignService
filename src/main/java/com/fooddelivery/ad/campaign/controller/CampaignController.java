@@ -38,6 +38,7 @@ public class CampaignController {
         return Long.parseLong(ifMatch.replace("\"", ""));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PostMapping("")
     public ResponseEntity<ApiResponse<CampaignResponse>> createCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @Validated @RequestBody CampaignRequest request) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -50,6 +51,7 @@ public class CampaignController {
                 .body(ApiResponse.success(response, "Campaign created successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CampaignResponse>> getCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @PathVariable UUID id) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -59,6 +61,7 @@ public class CampaignController {
                 .body(ApiResponse.success(response, "Campaign retrieved successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CampaignResponse>> updateCampaign(@PathVariable UUID advertiserId, @PathVariable UUID id, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @RequestHeader(value = "If-Match", required = false) String ifMatchHeader, @Validated @RequestBody CampaignRequest request) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -72,6 +75,7 @@ public class CampaignController {
                 .body(ApiResponse.success(response, "Campaign updated successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/activate")
     public ResponseEntity<ApiResponse<CampaignResponse>> activateCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @PathVariable UUID id) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -81,6 +85,7 @@ public class CampaignController {
                 .body(ApiResponse.success(response, "Campaign activated successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/pause")
     public ResponseEntity<ApiResponse<Void>> pauseCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @PathVariable UUID id) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -88,6 +93,7 @@ public class CampaignController {
         return ResponseEntity.ok(ApiResponse.success(null, "Campaign paused successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/resume")
     public ResponseEntity<ApiResponse<Void>> resumeCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @PathVariable UUID id) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -95,6 +101,7 @@ public class CampaignController {
         return ResponseEntity.ok(ApiResponse.success(null, "Campaign resumed successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCampaign(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @PathVariable UUID id) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -102,6 +109,7 @@ public class CampaignController {
         return ResponseEntity.ok(ApiResponse.success(null, "Campaign deleted successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @PostMapping("/wallet/topup")
     public ResponseEntity<ApiResponse<Map<String, String>>> topupWallet(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey, @Validated @RequestBody TopupWalletRequest request) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
@@ -115,12 +123,14 @@ public class CampaignController {
         return ResponseEntity.ok(gatewayResponse);
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("")
     public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<CampaignResponse>>> getCampaigns(@PathVariable UUID advertiserId, @RequestHeader(value = com.fooddelivery.common.constants.HeaderConstants.HEADER_USER_ID, required = false) String userId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
         return ResponseEntity.ok(ApiResponse.success(campaignService.getCampaignsByAdvertiser(advertiserId, pageable), "Campaigns retrieved successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}/performance")
     public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<com.fooddelivery.ad.campaign.dto.CampaignPerformanceResponse>>> getCampaignPerformance(
             @PathVariable UUID advertiserId, 
@@ -138,6 +148,7 @@ public class CampaignController {
         return ResponseEntity.ok(ApiResponse.success(campaignService.getCampaignPerformance(id, advertiserId, from, to, pageable), "Performance retrieved successfully"));
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     @GetMapping("/performance")
     public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<com.fooddelivery.ad.campaign.dto.CampaignPerformanceResponse>>> getAllCampaignPerformance(
             @PathVariable UUID advertiserId, 
