@@ -25,7 +25,7 @@ public class AdvertiserWalletBackfillRunner implements ApplicationRunner {
         log.info("Starting one-time Advertiser Wallet Backfill...");
         
         try {
-            String sql = "SELECT DISTINCT advertiser_id FROM ad_campaigns";
+            String sql = "SELECT DISTINCT advertiser_id FROM campaigns";
             List<String> advertiserIds = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("advertiser_id"));
             
             int count = 0;
