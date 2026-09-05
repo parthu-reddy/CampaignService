@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @org.springframework.data.jpa.repository.config.EnableJpaRepositories(basePackages = {"com.fooddelivery.ad.campaign", "com.fooddelivery.common"})
 @EnableJpaAuditing
 @EnableScheduling
-@EnableFeignClients(basePackages = "com.fooddelivery.ad.campaign.client")
+@EnableFeignClients(basePackages = {"com.fooddelivery.ad.campaign.client", "com.fooddelivery.common.client"})
 public class CampaignServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(CampaignServiceApplication.class, args);
