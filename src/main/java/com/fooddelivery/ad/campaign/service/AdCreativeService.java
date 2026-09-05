@@ -86,6 +86,7 @@ public class AdCreativeService {
                 .orElseThrow(() -> new IllegalArgumentException("Ad group not found or unauthorized"));
     }
 
+    @Transactional
     private void publishOutboxEvent(UUID aggregateId, EventType eventType, AdCreative creative) {
         try {
             OutboxEventEntity event = OutboxEventEntity.builder()
