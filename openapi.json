@@ -176,6 +176,13 @@
             "type" : "string",
             "format" : "uuid"
           }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -216,6 +223,13 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "requestBody" : {
@@ -267,6 +281,13 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {
@@ -653,6 +674,13 @@
           "schema" : {
             "$ref" : "#/components/schemas/Pageable"
           }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -685,6 +713,13 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "requestBody" : {
@@ -739,6 +774,13 @@
             "type" : "string",
             "format" : "uuid"
           }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -779,6 +821,13 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "requestBody" : {
@@ -844,6 +893,13 @@
           "name" : "contentType",
           "in" : "query",
           "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
           "schema" : {
             "type" : "string"
           }
@@ -913,6 +969,36 @@
         }
       }
     },
+    "/api/v1/internal/campaigns/{campaignId}/advertiser" : {
+      "get" : {
+        "tags" : [ "internal-campaign-controller" ],
+        "operationId" : "getCampaignAdvertiser",
+        "parameters" : [ {
+          "name" : "campaignId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/campaigns/active-for-bidding" : {
       "get" : {
         "tags" : [ "internal-campaign-controller" ],
@@ -937,6 +1023,36 @@
         }
       }
     },
+    "/api/v1/internal/advertisers/{advertiserId}/owner" : {
+      "get" : {
+        "tags" : [ "internal-advertiser-controller" ],
+        "operationId" : "getAdvertiserUserId",
+        "parameters" : [ {
+          "name" : "advertiserId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/advertisers/{id}" : {
       "get" : {
         "tags" : [ "advertiser-controller" ],
@@ -948,6 +1064,13 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {
@@ -987,6 +1110,13 @@
           "name" : "contentType",
           "in" : "query",
           "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "X-User-Id",
+          "in" : "header",
+          "required" : false,
           "schema" : {
             "type" : "string"
           }
@@ -1742,9 +1872,6 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "unpaged" : {
-            "type" : "boolean"
-          },
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
@@ -1758,6 +1885,9 @@
           "pageSize" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "unpaged" : {
+            "type" : "boolean"
           }
         }
       },

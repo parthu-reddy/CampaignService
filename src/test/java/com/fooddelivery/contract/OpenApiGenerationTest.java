@@ -83,6 +83,9 @@ public class OpenApiGenerationTest {
     @org.springframework.boot.test.mock.mockito.MockBean
     private com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.fooddelivery.ad.campaign.repository.AdvertiserProfileRepository advertiserProfileRepository;
+
 
     @org.springframework.boot.test.mock.mockito.MockBean
     private com.fooddelivery.ad.campaign.repository.CampaignRepository campaignRepository;

@@ -1,6 +1,6 @@
 package com.fooddelivery.ad.campaign.controller;
 
-import com.fooddelivery.ad.campaign.dto.CampaignPacingDTO;
+import com.fooddelivery.common.dto.campaign.CampaignPacingDTO;
 import com.fooddelivery.ad.campaign.repository.CampaignRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +56,19 @@ public class InternalCampaignController {
         
         return ResponseEntity.ok(budgets);
     }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('SERVICE', 'ADMIN')")
+    @GetMapping("/{campaignId}/advertiser")
+    public ResponseEntity<Map<String, String>> getCampaignAdvertiser(@PathVariable UUID campaignId) {
+        return campaignRepository.findById(campaignId)
+                .map(campaign -> {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("advertiserId", campaign.getAdvertiserId().toString());
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('SERVICE', 'ADMIN')")
     @GetMapping("/active-for-bidding")

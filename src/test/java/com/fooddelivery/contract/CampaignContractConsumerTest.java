@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRunner;
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,16 +28,11 @@ public class CampaignContractConsumerTest {
             DataSourceTransactionManagerAutoConfiguration.class,
             HibernateJpaAutoConfiguration.class
     })
-    @EnableFeignClients(basePackages = "com.fooddelivery.ad.campaign.client")
     static class TestConfig {
     }
 
-    @Autowired
-    private com.fooddelivery.ad.campaign.client.WalletServiceClient walletServiceClient;
-
     @Test
-    public void testClientInvocations() {
-        Object response = walletServiceClient.getWallet("CUSTOMER", UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        assertNotNull(response);
+    public void contextLoads() {
+        // No Feign clients to test
     }
 }

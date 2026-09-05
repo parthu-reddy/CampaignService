@@ -2,7 +2,7 @@ package com.fooddelivery.ad.campaign.controller;
 
 import com.fooddelivery.ad.campaign.dto.CampaignRequest;
 import com.fooddelivery.ad.campaign.dto.CampaignResponse;
-import com.fooddelivery.ad.campaign.dto.TopupWalletRequest;
+import com.fooddelivery.common.dto.wallet.TopupWalletRequest;
 import com.fooddelivery.ad.campaign.service.CampaignService;
 import com.fooddelivery.common.dto.ApiResponse;
 import org.springframework.http.HttpStatus;

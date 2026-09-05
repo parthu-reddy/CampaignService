@@ -7,6 +7,7 @@ import com.fooddelivery.ad.campaign.repository.AdvertiserProfileRepository;
 import com.fooddelivery.common.client.WalletServiceClient;
 import com.fooddelivery.common.dto.wallet.WalletDto;
 import com.fooddelivery.common.dto.wallet.CreateWalletRequest;
+import com.fooddelivery.common.enums.WalletEntityType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,11 +47,11 @@ public class AdvertiserService {
 
         // Synchronously create wallet
         try {
-            CreateWalletRequest createWalletReq = new CreateWalletRequest();
-            createWalletReq.setEntityId(profile.getId());
-            createWalletReq.setEntityType(com.fooddelivery.common.enums.EntityType.ADVERTISER);
-            createWalletReq.setCurrency(defaultCurrency);
-            WalletDto wallet = walletClient.createWallet(createWalletReq);
+            CreateWalletRequest createWalletReq = new CreateWalletRequest()
+                .entityId(profile.getId())
+                .entityType(WalletEntityType.ADVERTISER)
+                .currency("AD_CREDIT");
+            WalletDto wallet = walletClient.getOrCreateWallet(createWalletReq);
             profile.setWalletBalanceId(wallet.getId());
             profile = advertiserRepository.save(profile);
         } catch (Exception e) {

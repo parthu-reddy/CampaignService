@@ -1,11 +1,14 @@
 package com.fooddelivery.ad.campaign.config;
 
-import com.fooddelivery.ad.campaign.client.WalletServiceClient;
+import com.fooddelivery.common.client.WalletServiceClient;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import com.fooddelivery.common.dto.wallet.CreateWalletRequest;
+import com.fooddelivery.common.enums.WalletEntityType;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -31,12 +34,16 @@ public class AdvertiserWalletBackfillRunner implements ApplicationRunner {
             int count = 0;
             for (String advertiserIdStr : advertiserIds) {
                 try {
-                    UUID advertiserId = UUID.fromString(advertiserIdStr);
-                    // Calling GET /api/v1/wallets/{entityType}/{entityId} to proactively initialize the wallet
-                    walletServiceClient.getWallet("ADVERTISER", advertiserId);
+                    UUID id = UUID.fromString(advertiserIdStr);
+                    // Ensure wallet exists for this advertiser
+                    CreateWalletRequest req = new CreateWalletRequest()
+                        .entityType(WalletEntityType.ADVERTISER)
+                        .entityId(id)
+                        .currency("INR");
+                    walletServiceClient.getOrCreateWallet(req);
                     count++;
                 } catch (Exception e) {
-                    log.error("Failed to backfill wallet for advertiser {}", advertiserIdStr, e);
+                    log.warn("Failed to create wallet for advertiser {} during backfill: {}", advertiserIdStr, e.getMessage());
                 }
             }
             

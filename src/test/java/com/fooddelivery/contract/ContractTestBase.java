@@ -46,6 +46,16 @@ public class ContractTestBase {
         Mockito.when(campaignRepository.findAllById(Mockito.anyIterable()))
                .thenReturn(List.of(cmp1, cmp2));
 
-        RestAssuredMockMvc.standaloneSetup(new InternalCampaignController(campaignRepository, adGroupRepository));
+        com.fooddelivery.ad.campaign.repository.AdvertiserProfileRepository advertiserProfileRepository = Mockito.mock(com.fooddelivery.ad.campaign.repository.AdvertiserProfileRepository.class);
+        com.fooddelivery.ad.campaign.entity.AdvertiserProfile profile = new com.fooddelivery.ad.campaign.entity.AdvertiserProfile();
+        profile.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        profile.setUserId("user-789");
+        Mockito.when(advertiserProfileRepository.findById(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")))
+                .thenReturn(java.util.Optional.of(profile));
+
+        RestAssuredMockMvc.standaloneSetup(
+                new InternalCampaignController(campaignRepository, adGroupRepository),
+                new com.fooddelivery.ad.campaign.controller.InternalAdvertiserController(advertiserProfileRepository)
+        );
     }
 }
