@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerA
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRunner;
-import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.fooddelivery.common.client.WalletServiceClient;
@@ -37,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @AutoConfigureStubRunner(ids = {
     "com.fooddelivery:wallet-service:+:stubs"
-}, stubsMode = StubRunnerProperties.StubsMode.LOCAL)
+})
 public class CampaignContractConsumerTest {
 
     /** The entity the published get-wallet contract is written against. */
