@@ -30,7 +30,9 @@ class CampaignAlertConsumerTest {
 
     @BeforeEach
     void setUp() {
-        consumer = new CampaignAlertConsumer(campaignService, objectMapper, idempotencyKeyRepository);
+        consumer = new CampaignAlertConsumer(campaignService, objectMapper, idempotencyKeyRepository,
+                new com.fooddelivery.common.event.EventBinder(objectMapper,
+                jakarta.validation.Validation.buildDefaultValidatorFactory().getValidator()));
     }
 
     @Test
@@ -52,7 +54,10 @@ class CampaignAlertConsumerTest {
 
         when(idempotencyKeyRepository.tryClaim(anyString())).thenReturn(1);
 
-        consumer.consumeAdEvent(payload, Map.of());
+        // With the eventType header, the way OutboxProcessor publishes every event. The test
+        // passed Map.of() before because the consumer resolved the type from the body; the
+        // bound consumer reads the header, which is what production always sends.
+        consumer.consumeAdEvent(payload, Map.of("eventType", "AD_BUDGET_ALERT"));
 
         // Assert B is PAUSED
         verify(campaignService).pauseCampaign(campaignB, advertiserId);

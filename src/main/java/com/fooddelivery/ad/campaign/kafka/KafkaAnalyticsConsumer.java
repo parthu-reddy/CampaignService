@@ -32,7 +32,10 @@ public class KafkaAnalyticsConsumer {
     private final java.time.Clock clock;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
-    public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository, java.time.Clock clock, io.micrometer.core.instrument.MeterRegistry meterRegistry) {
+        private final com.fooddelivery.common.event.EventBinder eventBinder;
+
+public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository, java.time.Clock clock, io.micrometer.core.instrument.MeterRegistry meterRegistry, com.fooddelivery.common.event.EventBinder eventBinder) {
+        this.eventBinder = eventBinder;
         this.performanceRepository = performanceRepository;
         this.objectMapper = objectMapper;
         this.idempotencyKeyRepository = idempotencyKeyRepository;
@@ -40,7 +43,7 @@ public class KafkaAnalyticsConsumer {
         this.meterRegistry = meterRegistry;
     }
 
-    @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR)
+    @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 1000, multiplier = 2.0), autoCreateTopics = "true", dltStrategy = DltStrategy.FAIL_ON_ERROR, exclude = {com.fooddelivery.common.event.EventBindingException.class}, traversingCauses = "true")
     @KafkaListener(topics = KafkaConstants.TOPIC_AD_TRACKING_EVENTS, groupId = "${spring.kafka.consumer.group-id:campaign-service-group}-kafkaanalyticsconsumer")
     @Transactional
     @io.micrometer.observation.annotation.Observed(name = "analytics.consume", contextualName = "analytics-consumer")
@@ -61,32 +64,26 @@ public class KafkaAnalyticsConsumer {
             return;
         }
 
-        Map<String, Object> payload;
+        com.fooddelivery.common.event.AdTrackingEvent tracking;
         try {
-            payload = objectMapper.readValue(message, new TypeReference<Map<String, Object>>() {
-            });
+            // All five fields are @NotNull on AdTrackingEvent, so the containsKey block that used to
+            // stand here is the binding's job now. Both a malformed body and a missing field arrive
+            // as an exception from bind, and both keep the existing behaviour: discard, do not retry
+            // -- retrying cannot repair a payload.
+            tracking = eventBinder.bind(message, com.fooddelivery.common.event.AdTrackingEvent.class);
         } catch (Exception e) {
-            // Malformed JSON is unrecoverable — log and discard to prevent infinite retry loop
-            log.error("Dropping malformed tracking event (unparseable JSON): {}", message, e);
+            log.error("Dropping malformed tracking event (unparseable or incomplete): {}", message, e);
             meterRegistry.counter("campaign_event_dropped_total", "reason", "malformed").increment();
             return;
         }
         try {
-            if (!payload.containsKey(EventPayloadConstants.EVENT_TYPE) || 
-                !payload.containsKey(EventPayloadConstants.CAMPAIGN_ID) || 
-                !payload.containsKey(EventPayloadConstants.ADVERTISER_ID) || 
-                !payload.containsKey(EventPayloadConstants.AMOUNT) ||
-                !payload.containsKey(EventPayloadConstants.TIMESTAMP)) {
-                throw new InvalidTrackingEventException("Missing required fields in payload");
-            }
-
-            String eventType = (String) payload.get(EventPayloadConstants.EVENT_TYPE);
-            UUID campaignId = UUID.fromString((String) payload.get(EventPayloadConstants.CAMPAIGN_ID));
-            UUID advertiserId = UUID.fromString((String) payload.get(EventPayloadConstants.ADVERTISER_ID));
-            BigDecimal amount = new BigDecimal(payload.get(EventPayloadConstants.AMOUNT).toString());
+            String eventType = tracking.getEventType();
+            UUID campaignId = UUID.fromString(tracking.getCampaignId());
+            UUID advertiserId = UUID.fromString(tracking.getAdvertiserId());
+            BigDecimal amount = tracking.getAmount();
             
             // Business time bucketing
-            long timestampMs = Long.parseLong(payload.get(EventPayloadConstants.TIMESTAMP).toString());
+            long timestampMs = tracking.getTimestamp();
             LocalDate today = java.time.Instant.ofEpochMilli(timestampMs)
                                      .atZone(clock.getZone())
                                      .toLocalDate();

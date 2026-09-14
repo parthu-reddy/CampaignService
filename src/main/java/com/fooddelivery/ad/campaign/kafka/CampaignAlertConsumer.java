@@ -29,40 +29,46 @@ public class CampaignAlertConsumer {
     private final ObjectMapper objectMapper;
     private final IIdempotencyKeyRepository idempotencyKeyRepository;
 
-    public CampaignAlertConsumer(CampaignService campaignService, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository) {
+        private final com.fooddelivery.common.event.EventBinder eventBinder;
+
+public CampaignAlertConsumer(CampaignService campaignService, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository, com.fooddelivery.common.event.EventBinder eventBinder) {
+        this.eventBinder = eventBinder;
         this.campaignService = campaignService;
         this.objectMapper = objectMapper;
         this.idempotencyKeyRepository = idempotencyKeyRepository;
     }
 
     @Transactional
-    @RetryableTopic(attempts = "5")
+    @RetryableTopic(attempts = "5", exclude = {com.fooddelivery.common.event.EventBindingException.class}, traversingCauses = "true")
     @KafkaListener(topics = KafkaConstants.TOPIC_AD_EVENTS, groupId = "campaign-alert-consumer-group-campaignalertconsumer")
     public void consumeAdEvent(String message, @Headers Map<String, Object> headers) throws Exception {
-        JsonNode root = objectMapper.readTree(message);
-        String eventTypeStr = EventPayloadUtils.resolveEventType(root, headers);
-        
-        if (EventType.AD_BUDGET_ALERT.name().equals(eventTypeStr)) {
-            JsonNode payload = root;
-            
-            String eventId = root.hasNonNull("eventId") ? root.get("eventId").asText() : UUID.randomUUID().toString();
-            String idempotencyKeyStr = "processed_event:budget_alert:" + eventId;
-            if (idempotencyKeyRepository.tryClaim(idempotencyKeyStr) == 0) {
-                log.info("Duplicate budget alert event ignored: {}", idempotencyKeyStr);
-                return;
-            }
+        String eventTypeStr = com.fooddelivery.common.util.KafkaHeaderUtils.extractEventType(headers, null);
+        if (!EventType.AD_BUDGET_ALERT.name().equals(eventTypeStr)) {
+            return;
+        }
+        // WalletService.publishBudgetAlert serialises a BudgetAlertEvent -- {eventId, advertiserId,
+        // campaignId} -- which is a different shape from the CampaignChangedEvent the rest of
+        // ad-events carries. Producer and consumer were changed together.
+        com.fooddelivery.common.event.BudgetAlertEvent event = eventBinder.bindIf(
+                EventType.AD_BUDGET_ALERT, eventTypeStr, message,
+                com.fooddelivery.common.event.BudgetAlertEvent.class)
+                .orElseThrow(() -> new IllegalStateException(
+                        "bindIf returned empty for " + eventTypeStr
+                                + " despite an exact event-type match"));
 
-            String advertiserIdStr = payload.path("advertiserId").asText(null);
-            String campaignIdStr = EventPayloadUtils.campaignId(payload);
-            
-            if (advertiserIdStr != null && campaignIdStr != null) {
-                UUID campaignId = UUID.fromString(campaignIdStr);
-                UUID advertiserId = UUID.fromString(advertiserIdStr);
-                log.warn("Received AD_BUDGET_ALERT for advertiser {}, pausing campaign {}", advertiserIdStr, campaignIdStr);
-                campaignService.pauseCampaign(campaignId, advertiserId);
-            } else {
-                log.warn("Received AD_BUDGET_ALERT but missing advertiserId or campaignId. payload={}", payload);
-            }
+        String eventId = event.getEventId() != null ? event.getEventId() : UUID.randomUUID().toString();
+        String idempotencyKeyStr = "processed_event:budget_alert:" + eventId;
+        if (idempotencyKeyRepository.tryClaim(idempotencyKeyStr) == 0) {
+            log.info("Duplicate budget alert event ignored: {}", idempotencyKeyStr);
+            return;
+        }
+
+        if (event.getAdvertiserId() != null && event.getCampaignId() != null) {
+            log.warn("Received AD_BUDGET_ALERT for advertiser {}, pausing campaign {}",
+                    event.getAdvertiserId(), event.getCampaignId());
+            campaignService.pauseCampaign(event.getCampaignId(), event.getAdvertiserId());
+        } else {
+            log.warn("Received AD_BUDGET_ALERT but missing advertiserId or campaignId. event={}", event);
         }
     }
 
