@@ -1741,14 +1741,17 @@
         }
       },
       "TopupWalletRequest" : {
-        "required" : [ "amount" ],
+        "required" : [ "amount", "paymentMethod" ],
         "type" : "object",
         "properties" : {
           "amount" : {
+            "minimum" : 0.01,
+            "exclusiveMinimum" : false,
             "type" : "number"
           },
-          "gatewayName" : {
-            "type" : "string"
+          "paymentMethod" : {
+            "type" : "string",
+            "enum" : [ "CARD", "UPI", "WALLET" ]
           }
         }
       },
@@ -1829,6 +1832,16 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "size" : {
             "type" : "integer",
             "format" : "int32"
@@ -1838,10 +1851,6 @@
             "items" : {
               "$ref" : "#/components/schemas/CampaignResponse"
             }
-          },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
           },
           "number" : {
             "type" : "integer",
@@ -1853,12 +1862,6 @@
           "last" : {
             "type" : "boolean"
           },
-          "sort" : {
-            "$ref" : "#/components/schemas/SortObject"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "empty" : {
             "type" : "boolean"
           }
@@ -1868,10 +1871,6 @@
         "required" : [ "offset", "pageNumber", "pageSize", "paged", "unpaged" ],
         "type" : "object",
         "properties" : {
-          "offset" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
@@ -1888,6 +1887,10 @@
           },
           "unpaged" : {
             "type" : "boolean"
+          },
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -1977,6 +1980,16 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "size" : {
             "type" : "integer",
             "format" : "int32"
@@ -1987,10 +2000,6 @@
               "$ref" : "#/components/schemas/CampaignPerformanceResponse"
             }
           },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "number" : {
             "type" : "integer",
             "format" : "int32"
@@ -2000,12 +2009,6 @@
           },
           "last" : {
             "type" : "boolean"
-          },
-          "sort" : {
-            "$ref" : "#/components/schemas/SortObject"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -2046,6 +2049,16 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "size" : {
             "type" : "integer",
             "format" : "int32"
@@ -2056,10 +2069,6 @@
               "$ref" : "#/components/schemas/AdGroupResponse"
             }
           },
-          "numberOfElements" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "number" : {
             "type" : "integer",
             "format" : "int32"
@@ -2069,12 +2078,6 @@
           },
           "last" : {
             "type" : "boolean"
-          },
-          "sort" : {
-            "$ref" : "#/components/schemas/SortObject"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
