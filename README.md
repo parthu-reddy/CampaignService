@@ -166,3 +166,5 @@ How this service integrates with the broader Food Delivery platform:
 - **CommunicationService**: Dispatches Kafka events to `platform.notifications.dispatch` when a campaign budget is running low (< 20% remaining), or is auto-paused due to insufficient funds.
 - **ApiGateway**: Public routes for `/api/v1/campaigns/**` are mapped directly to this service to serve the frontend portals.
 
+
+<!-- dummy data -->
