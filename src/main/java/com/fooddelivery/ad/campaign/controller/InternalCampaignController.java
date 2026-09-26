@@ -24,9 +24,13 @@ public class InternalCampaignController {
     private final CampaignRepository campaignRepository;
     private final com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository;
 
-    public InternalCampaignController(CampaignRepository campaignRepository, com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository) {
+    private final com.fooddelivery.ad.campaign.service.AdvertiserCalendar advertiserCalendar;
+
+    public InternalCampaignController(CampaignRepository campaignRepository, com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository,
+                                      com.fooddelivery.ad.campaign.service.AdvertiserCalendar advertiserCalendar) {
         this.campaignRepository = campaignRepository;
         this.adGroupRepository = adGroupRepository;
+        this.advertiserCalendar = advertiserCalendar;
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('SERVICE', 'ADMIN')")
@@ -46,7 +50,9 @@ public class InternalCampaignController {
                     budgets.put(campaign.getId().toString(), new CampaignPacingDTO(
                         campaign.getDailyBudget().doubleValue(), 
                         campaign.getLifetimeBudget() != null ? campaign.getLifetimeBudget().doubleValue() : null, 
-                        campaign.getAdvertiserId()
+                        campaign.getAdvertiserId(),
+                        // the daily budget resets at midnight on the advertiser's calendar
+                        advertiserCalendar.zoneOf(campaign.getAdvertiserId()).getId()
                     ));
                 }
             }
@@ -84,6 +90,8 @@ public class InternalCampaignController {
             map.put("id", c.getId().toString());
             map.put("advertiserId", c.getAdvertiserId().toString());
             map.put("maxBid", c.getMaxBid());
+            // dayparting and the tracker's spend day run on the advertiser's calendar
+            map.put("timeZone", advertiserCalendar.zoneOf(c.getAdvertiserId()).getId());
             
             com.fooddelivery.common.dto.targeting.TargetingSummary targeting = buildTargetingSummary(
                 adGroupRepository.findByCampaignIdAndActiveTrue(c.getId()));

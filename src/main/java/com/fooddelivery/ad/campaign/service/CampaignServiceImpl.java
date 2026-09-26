@@ -32,6 +32,7 @@ public class CampaignServiceImpl implements CampaignService {
     private final NotificationRouterService notificationRouterService;
     private final com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository campaignPerformanceRepository;
     private final WalletServiceClient walletServiceClient;
+    private final AdvertiserCalendar advertiserCalendar;
 
     @Override
     @Transactional
@@ -45,8 +46,9 @@ public class CampaignServiceImpl implements CampaignService {
         campaign.setDailyBudget(request.getDailyBudget());
         campaign.setLifetimeBudget(request.getLifetimeBudget());
         campaign.setMaxBid(request.getMaxBid());
-        campaign.setStartDate(request.getStartDate());
-        campaign.setEndDate(request.getEndDate());
+        java.time.ZoneId zone = advertiserCalendar.zoneOf(campaign.getAdvertiserId());
+        campaign.setStartDate(AdvertiserCalendar.startOf(request.getStartDate(), zone));
+        campaign.setEndDate(request.getEndDate() != null ? AdvertiserCalendar.endOf(request.getEndDate(), zone) : null);
         if (request.getFrequencyCap() != null) {
             campaign.setFrequencyCap(request.getFrequencyCap());
         }
@@ -67,8 +69,9 @@ public class CampaignServiceImpl implements CampaignService {
         campaign.setDailyBudget(request.getDailyBudget());
         campaign.setLifetimeBudget(request.getLifetimeBudget());
         campaign.setMaxBid(request.getMaxBid());
-        campaign.setStartDate(request.getStartDate());
-        campaign.setEndDate(request.getEndDate());
+        java.time.ZoneId zone = advertiserCalendar.zoneOf(campaign.getAdvertiserId());
+        campaign.setStartDate(AdvertiserCalendar.startOf(request.getStartDate(), zone));
+        campaign.setEndDate(request.getEndDate() != null ? AdvertiserCalendar.endOf(request.getEndDate(), zone) : null);
         if (request.getFrequencyCap() != null) {
             campaign.setFrequencyCap(request.getFrequencyCap());
         }
@@ -289,11 +292,12 @@ public class CampaignServiceImpl implements CampaignService {
                     .creativeFormat(creativeFormat)
                     .creativeAssetUrl(creativeAssetUrl)
                     .creativeVastXml(creativeVastXml)
+                    .timeZone(advertiserCalendar.zoneOf(campaign.getAdvertiserId()).getId())
                     .build();
 
             OutboxEventEntity event = OutboxEventEntity.builder()
                     .id(UUID.randomUUID())
-                    .createdAt(java.time.LocalDateTime.now())
+                    .createdAt(java.time.Instant.now())
                     .aggregateType(AggregateType.ADVERTISEMENT)
                     .aggregateId(aggregateId.toString())
                     .eventType(eventType)
@@ -316,8 +320,10 @@ public class CampaignServiceImpl implements CampaignService {
         response.setDailyBudget(campaign.getDailyBudget());
         response.setLifetimeBudget(campaign.getLifetimeBudget());
         response.setMaxBid(campaign.getMaxBid());
-        response.setStartDate(campaign.getStartDate());
-        response.setEndDate(campaign.getEndDate());
+        java.time.ZoneId zone = advertiserCalendar.zoneOf(campaign.getAdvertiserId());
+        response.setStartDate(com.fooddelivery.common.time.BusinessCalendar.localDate(campaign.getStartDate(), zone));
+        response.setEndDate(campaign.getEndDate() != null ? AdvertiserCalendar.lastDayOf(campaign.getEndDate(), zone) : null);
+        response.setTimeZone(zone.getId());
         response.setFrequencyCap(campaign.getFrequencyCap());
         response.setVersion(campaign.getVersion());
         return response;
@@ -351,7 +357,7 @@ public class CampaignServiceImpl implements CampaignService {
     private final com.fooddelivery.ad.campaign.repository.AdCreativeRepository adCreativeRepository;
     private final com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository;
 
-    public CampaignServiceImpl(final CampaignRepository campaignRepository, final OutboxEventRepository outboxEventRepository, final ObjectMapper objectMapper, final NotificationRouterService notificationRouterService, final com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository campaignPerformanceRepository, final WalletServiceClient walletServiceClient, final com.fooddelivery.ad.campaign.repository.AdCreativeRepository adCreativeRepository, final com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository) {
+    public CampaignServiceImpl(final CampaignRepository campaignRepository, final OutboxEventRepository outboxEventRepository, final ObjectMapper objectMapper, final NotificationRouterService notificationRouterService, final com.fooddelivery.ad.campaign.repository.CampaignPerformanceRepository campaignPerformanceRepository, final WalletServiceClient walletServiceClient, final com.fooddelivery.ad.campaign.repository.AdCreativeRepository adCreativeRepository, final com.fooddelivery.ad.campaign.repository.AdGroupRepository adGroupRepository, final AdvertiserCalendar advertiserCalendar) {
         this.campaignRepository = campaignRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.objectMapper = objectMapper;
@@ -360,5 +366,6 @@ public class CampaignServiceImpl implements CampaignService {
         this.walletServiceClient = walletServiceClient;
         this.adCreativeRepository = adCreativeRepository;
         this.adGroupRepository = adGroupRepository;
+        this.advertiserCalendar = advertiserCalendar;
     }
 }

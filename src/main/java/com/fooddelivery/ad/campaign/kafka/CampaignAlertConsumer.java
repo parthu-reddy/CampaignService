@@ -73,7 +73,9 @@ public CampaignAlertConsumer(CampaignService campaignService, ObjectMapper objec
     }
 
     @DltHandler
-    public void handleDlt(String message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, Exception e) {
-        log.error("DLQ: Failed to process alert event on topic {} after retries: {}. Error: {}", topic, message, e.getMessage());
+    public void handleDlt(String message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+                          @Header(KafkaHeaders.OFFSET) long offset, Exception e) {
+        log.error("DLQ: Failed to process alert event on topic {} after retries: {}. Error: {} replay={}", topic, message,
+                e.getMessage(), com.fooddelivery.common.util.KafkaHeaderUtils.deadLetterPosition(topic, partition, offset));
     }
 }

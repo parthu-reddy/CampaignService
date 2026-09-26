@@ -45,6 +45,7 @@ public class SpendReconciliationScheduler {
     private final JdbcTemplate jdbcTemplate;
     private final StringRedisTemplate redisTemplate;
     private final MeterRegistry meterRegistry;
+    private final java.time.Clock clock;
 
     @Value("${campaign.reconciliation.tolerance:0.01}")
     private BigDecimal tolerance;
@@ -54,10 +55,12 @@ public class SpendReconciliationScheduler {
 
     public SpendReconciliationScheduler(JdbcTemplate jdbcTemplate,
                                         StringRedisTemplate redisTemplate,
-                                        MeterRegistry meterRegistry) {
+                                        MeterRegistry meterRegistry,
+                                        java.time.Clock clock) {
         this.jdbcTemplate = jdbcTemplate;
         this.redisTemplate = redisTemplate;
         this.meterRegistry = meterRegistry;
+        this.clock = clock;
     }
 
     @Scheduled(fixedDelayString = "${campaign.reconciliation.interval.ms:3600000}")
@@ -66,12 +69,18 @@ public class SpendReconciliationScheduler {
         // Bounded by a lookback window rather than scanning the whole table.
         String sql = "SELECT campaign_id, SUM(spend) AS total_spend "
                    + "FROM campaign_performance "
-                   + "WHERE date >= CURRENT_DATE - CAST(? AS INTEGER) "
+                   + "WHERE date >= ? "
                    + "GROUP BY campaign_id";
 
         List<Map<String, Object>> rows;
         try {
-            rows = jdbcTemplate.queryForList(sql, lookbackDays);
+            // campaign_performance.date is on each advertiser's calendar, and those run from UTC-12 to
+            // UTC+14, so the bound is taken from the UTC date with a day of slack each side. It used to
+            // be CURRENT_DATE: the database session's date, i.e. the JVM's zone. The comparison is
+            // against a lifetime counter, so a day of extra history only makes the sum complete.
+            java.time.LocalDate since = com.fooddelivery.common.time.BusinessCalendar
+                    .today(clock, java.time.ZoneOffset.UTC).minusDays(lookbackDays + 1L);
+            rows = jdbcTemplate.queryForList(sql, since);
         } catch (Exception e) {
             log.error("Spend reconciliation could not read campaign_performance", e);
             return;

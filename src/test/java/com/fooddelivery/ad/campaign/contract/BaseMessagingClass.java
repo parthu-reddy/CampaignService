@@ -110,6 +110,7 @@ public abstract class BaseMessagingClass {
                 .budgetExhausted(false)
                 .pacingMultiplier(1.0)
                 .schemaVersion(2)
+                .timeZone("Asia/Kolkata")
                 .build();
 
         com.fooddelivery.common.outbox.entity.OutboxEventEntity outboxEvent =
@@ -119,7 +120,7 @@ public abstract class BaseMessagingClass {
                         .aggregateId(event.getCampaignId().toString())
                         .eventType(eventType)
                         .payload(objectMapper.writeValueAsString(event))
-                        .createdAt(java.time.LocalDateTime.now())
+                        .createdAt(java.time.Instant.now())
                         .build();
         com.fooddelivery.common.outbox.repository.OutboxEventRepository repo =
                 org.mockito.Mockito.mock(com.fooddelivery.common.outbox.repository.OutboxEventRepository.class);

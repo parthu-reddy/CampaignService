@@ -23,9 +23,14 @@ public class CampaignResponse {
     private BigDecimal lifetimeBudget;
     @jakarta.validation.constraints.NotNull
     private BigDecimal maxBid;
+    /** First day, on the advertiser's calendar. */
     @jakarta.validation.constraints.NotNull
-    private Instant startDate;
-    private Instant endDate;
+    private java.time.LocalDate startDate;
+    /** Last day (inclusive), on the advertiser's calendar. */
+    private java.time.LocalDate endDate;
+    /** The advertiser's IANA zone, which the dates are in. */
+    @jakarta.validation.constraints.NotNull
+    private String timeZone;
     @jakarta.validation.constraints.NotNull
     private Integer frequencyCap;
     @jakarta.validation.constraints.NotNull

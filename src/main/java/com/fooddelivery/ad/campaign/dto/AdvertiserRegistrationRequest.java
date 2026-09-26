@@ -9,4 +9,9 @@ public class AdvertiserRegistrationRequest {
     private String companyName;
 
     private String externalRef;
+
+    /** IANA zone the advertiser's campaigns run in, e.g. Asia/Kolkata. Offsets such as +05:30 are refused: they have no DST rules. */
+    @jakarta.validation.constraints.NotBlank(message = "Time zone is required")
+    @com.fooddelivery.common.time.IanaTimeZone
+    private String timeZone;
 }

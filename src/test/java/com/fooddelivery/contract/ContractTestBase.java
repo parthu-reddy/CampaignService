@@ -52,9 +52,21 @@ public class ContractTestBase {
         profile.setUserId("user-789");
         Mockito.when(advertiserProfileRepository.findById(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")))
                 .thenReturn(java.util.Optional.of(profile));
+        profile.setTimeZone(java.time.ZoneId.of("Asia/Kolkata"));
+        // The two campaigns' advertisers, in different zones: the pacing contract shows the zone is per advertiser.
+        for (String[] adv : new String[][] {{"550e8400-e29b-41d4-a716-446655440000", "Asia/Kolkata"},
+                                            {"550e8400-e29b-41d4-a716-446655440001", "America/New_York"}}) {
+            com.fooddelivery.ad.campaign.entity.AdvertiserProfile p = new com.fooddelivery.ad.campaign.entity.AdvertiserProfile();
+            p.setId(UUID.fromString(adv[0]));
+            p.setTimeZone(java.time.ZoneId.of(adv[1]));
+            Mockito.when(advertiserProfileRepository.findById(p.getId())).thenReturn(java.util.Optional.of(p));
+        }
+        com.fooddelivery.ad.campaign.service.AdvertiserCalendar advertiserCalendar =
+                new com.fooddelivery.ad.campaign.service.AdvertiserCalendar(advertiserProfileRepository, java.time.Clock.systemUTC());
 
-        RestAssuredMockMvc.standaloneSetup(
-                new InternalCampaignController(campaignRepository, adGroupRepository),
+        // Serialize as production does: see PlatformJson (contract-harness Jackson drift).
+        com.fooddelivery.common.contract.PlatformJson.standaloneSetup(
+                new InternalCampaignController(campaignRepository, adGroupRepository, advertiserCalendar),
                 new com.fooddelivery.ad.campaign.controller.InternalAdvertiserController(advertiserProfileRepository)
         );
     }

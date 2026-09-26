@@ -26,11 +26,14 @@ public class CampaignController {
     private final CampaignService campaignService;
     private final WalletServiceClient walletClient;
     private final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper;
+    private final com.fooddelivery.ad.campaign.service.AdvertiserCalendar advertiserCalendar;
 
-    public CampaignController(final CampaignService campaignService, final WalletServiceClient walletClient, final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper) {
+    public CampaignController(final CampaignService campaignService, final WalletServiceClient walletClient, final com.fooddelivery.ad.campaign.service.CampaignSecurityHelper campaignSecurityHelper,
+                              final com.fooddelivery.ad.campaign.service.AdvertiserCalendar advertiserCalendar) {
         this.campaignService = campaignService;
         this.walletClient = walletClient;
         this.campaignSecurityHelper = campaignSecurityHelper;
+        this.advertiserCalendar = advertiserCalendar;
     }
 
     private Long parseIfMatch(String ifMatch) {
@@ -140,7 +143,7 @@ public class CampaignController {
             @RequestParam(required = false) LocalDate to,
             @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
-        if (to == null) to = LocalDate.now(java.time.ZoneOffset.UTC);
+        if (to == null) to = advertiserCalendar.today(advertiserId); // performance days are the advertiser's
         if (from == null) from = to.minusDays(30);
         if (from.isBefore(to.minusDays(90))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date range cannot exceed 90 days");
@@ -157,7 +160,7 @@ public class CampaignController {
             @RequestParam(required = false) LocalDate to,
             @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         campaignSecurityHelper.verifyAccess(userId, advertiserId);
-        if (to == null) to = LocalDate.now(java.time.ZoneOffset.UTC);
+        if (to == null) to = advertiserCalendar.today(advertiserId); // performance days are the advertiser's
         if (from == null) from = to.minusDays(30);
         if (from.isBefore(to.minusDays(90))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date range cannot exceed 90 days");

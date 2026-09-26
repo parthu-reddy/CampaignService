@@ -20,7 +20,9 @@ org.springframework.cloud.contract.spec.Contract.make {
             status: "ACTIVE",
             maxBid: 12.50,
             budget: 500.00,
-            budgetExhausted: false
+            budgetExhausted: false,
+            // the advertiser's zone: dayparting and the spend day run on its calendar
+            timeZone: "Asia/Kolkata"
         ])
     }
 }

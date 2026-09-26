@@ -29,17 +29,15 @@ public class KafkaAnalyticsConsumer {
     private final CampaignPerformanceRepository performanceRepository;
     private final ObjectMapper objectMapper;
     private final IIdempotencyKeyRepository idempotencyKeyRepository;
-    private final java.time.Clock clock;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
         private final com.fooddelivery.common.event.EventBinder eventBinder;
 
-public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository, java.time.Clock clock, io.micrometer.core.instrument.MeterRegistry meterRegistry, com.fooddelivery.common.event.EventBinder eventBinder) {
+public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepository, ObjectMapper objectMapper, IIdempotencyKeyRepository idempotencyKeyRepository, io.micrometer.core.instrument.MeterRegistry meterRegistry, com.fooddelivery.common.event.EventBinder eventBinder) {
         this.eventBinder = eventBinder;
         this.performanceRepository = performanceRepository;
         this.objectMapper = objectMapper;
         this.idempotencyKeyRepository = idempotencyKeyRepository;
-        this.clock = clock;
         this.meterRegistry = meterRegistry;
     }
 
@@ -82,11 +80,10 @@ public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepositor
             UUID advertiserId = UUID.fromString(tracking.getAdvertiserId());
             BigDecimal amount = tracking.getAmount();
             
-            // Business time bucketing
-            long timestampMs = tracking.getTimestamp();
-            LocalDate today = java.time.Instant.ofEpochMilli(timestampMs)
-                                     .atZone(clock.getZone())
-                                     .toLocalDate();
+            // The day this counts against was decided once, by the tracker, on the advertiser's
+            // calendar -- the same day it charged to the daily budget. Recomputing it here from the
+            // timestamp would need the advertiser's zone and could disagree at midnight.
+            LocalDate today = tracking.getSpendDay();
 
             int i = 0, c = 0, v = 0;
             BigDecimal spend = BigDecimal.ZERO;
@@ -115,8 +112,9 @@ public KafkaAnalyticsConsumer(CampaignPerformanceRepository performanceRepositor
     }
 
     @DltHandler
-    public void handleDlt(Object message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-        log.error("Tracking event failed all retries and sent to DLT: {} - {}", topic, message);
+    public void handleDlt(Object message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+                          @Header(KafkaHeaders.OFFSET) long offset) {
+        log.error("Tracking event failed all retries and sent to DLT: {} - {} replay={}", topic, message, com.fooddelivery.common.util.KafkaHeaderUtils.deadLetterPosition(topic, partition, offset));
         meterRegistry.counter("kafka_dlt_depth_total", "topic", topic).increment();
     }
 }

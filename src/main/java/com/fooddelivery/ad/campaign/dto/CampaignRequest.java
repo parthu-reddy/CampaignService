@@ -25,9 +25,15 @@ public class CampaignRequest {
     @NotNull
     @jakarta.validation.constraints.Positive
     private BigDecimal maxBid;
+    /**
+     * The first and last days of the campaign, as calendar dates on the advertiser's calendar. The
+     * server turns them into instants in the advertiser's zone (AdvertiserCalendar), so a campaign runs
+     * all of its last day wherever the advertiser is. They used to be instants the browser made from
+     * UTC midnight, which ended an Indian campaign at 05:30 and started an American one the day before.
+     */
     @NotNull
-    private Instant startDate;
-    private Instant endDate;
+    private java.time.LocalDate startDate;
+    private java.time.LocalDate endDate;
     @PositiveOrZero
     private Integer frequencyCap;
 

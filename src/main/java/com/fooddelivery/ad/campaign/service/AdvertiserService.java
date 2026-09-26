@@ -42,6 +42,7 @@ public class AdvertiserService {
         profile.setUserId(userId);
         profile.setCompanyName(request.getCompanyName());
         profile.setExternalRef(request.getExternalRef());
+        profile.setTimeZone(java.time.ZoneId.of(request.getTimeZone()));
         
         profile = advertiserRepository.save(profile);
 
@@ -90,6 +91,7 @@ public class AdvertiserService {
         response.setCompanyName(profile.getCompanyName());
         response.setExternalRef(profile.getExternalRef());
         response.setWalletBalanceId(profile.getWalletBalanceId());
+        response.setTimeZone(profile.getTimeZone().getId());
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
         return response;

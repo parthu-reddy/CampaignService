@@ -28,6 +28,11 @@ public class AdvertiserProfile {
     private String companyName;
     @Column(name = "wallet_balance_id")
     private UUID walletBalanceId; // Links to BillingWalletService
+
+    /** The IANA zone the advertiser's campaigns run in: budgets reset, dayparts and report days on its calendar. */
+    @Column(name = "time_zone", nullable = false)
+    @jakarta.persistence.Convert(converter = com.fooddelivery.common.time.ZoneIdConverter.class)
+    private java.time.ZoneId timeZone;
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

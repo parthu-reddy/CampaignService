@@ -14,6 +14,9 @@ public class AdvertiserResponse {
     private String companyName;
     private String externalRef;
     private UUID walletBalanceId;
+    /** IANA zone the advertiser's campaigns run in. */
+    @jakarta.validation.constraints.NotNull
+    private String timeZone;
     @jakarta.validation.constraints.NotNull
     private Instant createdAt;
     @jakarta.validation.constraints.NotNull

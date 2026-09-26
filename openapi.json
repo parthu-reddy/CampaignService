@@ -1310,11 +1310,11 @@
           },
           "startDate" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date"
           },
           "endDate" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date"
           },
           "frequencyCap" : {
             "type" : "integer",
@@ -1345,7 +1345,7 @@
         }
       },
       "CampaignResponse" : {
-        "required" : [ "advertiserId", "dailyBudget", "frequencyCap", "id", "lifetimeBudget", "maxBid", "name", "startDate", "status", "version" ],
+        "required" : [ "advertiserId", "dailyBudget", "frequencyCap", "id", "lifetimeBudget", "maxBid", "name", "startDate", "status", "timeZone", "version" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1374,11 +1374,14 @@
           },
           "startDate" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date"
           },
           "endDate" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date"
+          },
+          "timeZone" : {
+            "type" : "string"
           },
           "frequencyCap" : {
             "type" : "integer",
@@ -1562,7 +1565,7 @@
         }
       },
       "CampaignPacingDTO" : {
-        "required" : [ "advertiserId" ],
+        "required" : [ "advertiserId", "timeZone" ],
         "type" : "object",
         "properties" : {
           "dailyBudget" : {
@@ -1576,11 +1579,14 @@
           "advertiserId" : {
             "type" : "string",
             "format" : "uuid"
+          },
+          "timeZone" : {
+            "type" : "string"
           }
         }
       },
       "AdvertiserRegistrationRequest" : {
-        "required" : [ "companyName" ],
+        "required" : [ "companyName", "timeZone" ],
         "type" : "object",
         "properties" : {
           "companyName" : {
@@ -1588,11 +1594,14 @@
           },
           "externalRef" : {
             "type" : "string"
+          },
+          "timeZone" : {
+            "type" : "string"
           }
         }
       },
       "AdvertiserResponse" : {
-        "required" : [ "companyName", "createdAt", "id", "updatedAt", "userId" ],
+        "required" : [ "companyName", "createdAt", "id", "timeZone", "updatedAt", "userId" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -1611,6 +1620,9 @@
           "walletBalanceId" : {
             "type" : "string",
             "format" : "uuid"
+          },
+          "timeZone" : {
+            "type" : "string"
           },
           "createdAt" : {
             "type" : "string",
@@ -1832,13 +1844,17 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "sort" : {
-            "$ref" : "#/components/schemas/SortObject"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
             "type" : "integer",
             "format" : "int32"
           },
@@ -1852,15 +1868,11 @@
               "$ref" : "#/components/schemas/CampaignResponse"
             }
           },
-          "number" : {
-            "type" : "integer",
-            "format" : "int32"
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
           },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -1871,6 +1883,10 @@
         "required" : [ "offset", "pageNumber", "pageSize", "paged", "unpaged" ],
         "type" : "object",
         "properties" : {
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
@@ -1887,10 +1903,6 @@
           },
           "unpaged" : {
             "type" : "boolean"
-          },
-          "offset" : {
-            "type" : "integer",
-            "format" : "int64"
           }
         }
       },
@@ -1980,13 +1992,17 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "sort" : {
-            "$ref" : "#/components/schemas/SortObject"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
             "type" : "integer",
             "format" : "int32"
           },
@@ -2000,15 +2016,11 @@
               "$ref" : "#/components/schemas/CampaignPerformanceResponse"
             }
           },
-          "number" : {
-            "type" : "integer",
-            "format" : "int32"
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
           },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -2049,13 +2061,17 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "sort" : {
-            "$ref" : "#/components/schemas/SortObject"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
             "type" : "integer",
             "format" : "int32"
           },
@@ -2069,15 +2085,11 @@
               "$ref" : "#/components/schemas/AdGroupResponse"
             }
           },
-          "number" : {
-            "type" : "integer",
-            "format" : "int32"
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
           },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
